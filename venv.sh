@@ -13,6 +13,10 @@ fi
 source $VENV_DIR/bin/activate
 echo 'venv activated'
 
-echo 'updating requirements'
+echo 'installing stanalone requirements...'
+pip3 install http://download.pytorch.org/whl/torch-0.2.0.post3-cp36-cp36m-macosx_10_7_x86_64.whl
+echo 'done'
+
+echo 'updating requirements...'
 pip3 install -r requirements.txt
 echo 'done'
