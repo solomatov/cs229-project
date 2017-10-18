@@ -2,10 +2,12 @@
 
 VENV_DIR=./env
 
-if [ ! -f $VENV_DIR ]; then
+if [ ! -d $VENV_DIR ]; then
     echo 'creating venv...'
     python3 -m venv $VENV_DIR
     echo 'done'
+else
+    echo 'venv have been already created'
 fi
 
 source $VENV_DIR/bin/activate
