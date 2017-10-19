@@ -22,9 +22,9 @@ class NaiveCNN(nn.Module):
         self.conv3_2_bn = nn.BatchNorm2d(256)
 
         self.conv4_1 = nn.Conv2d(256, 512, 3, padding=1)
-        self.conv4_1_bn = nn.BatchNorm2d(256)
+        self.conv4_1_bn = nn.BatchNorm2d(512)
         self.conv4_2 = nn.Conv2d(512, 512, 3, padding=1)
-        self.conv4_2_bn = nn.BatchNorm2d(256)
+        self.conv4_2_bn = nn.BatchNorm2d(512)
 
         self.fc1 = nn.Linear(2048, 1024)
         self.fc2 = nn.Linear(1024, 512)
