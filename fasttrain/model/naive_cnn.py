@@ -15,7 +15,10 @@ class NaiveCNN(nn.Module):
         self.conv3_1 = nn.Conv2d(128, 256, 3, padding=1)
         self.conv3_2 = nn.Conv2d(256, 256, 3, padding=1)
 
-        self.fc1 = nn.Linear(4096, 2048)
+        self.conv4_1 = nn.Conv2d(256, 512, 3, padding=1)
+        self.conv4_2 = nn.Conv2d(512, 512, 3, padding=1)
+
+        self.fc1 = nn.Linear(2048, 2048)
         self.fc2 = nn.Linear(2048, 512)
         self.fc3 = nn.Linear(512, 256)
         self.fc4 = nn.Linear(256, 10)
@@ -34,7 +37,11 @@ class NaiveCNN(nn.Module):
         l3_2 = F.relu(self.conv3_2(l3_1))
         l3 = F.max_pool2d(l3_2, 2)
 
-        flat = l3.view(l3.size()[0], -1)
+        l4_1 = F.relu(self.conv4_1(l3))
+        l4_2 = F.relu(self.conv4_2(l4_1))
+        l4 = F.max_pool2d(l4_2, 2)
+
+        flat = l4.view(l4.size()[0], -1)
 
         fc1 = F.relu(self.fc1(flat))
         fc2 = F.relu(self.fc2(fc1))
