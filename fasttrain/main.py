@@ -42,5 +42,5 @@ for e in range(10):
         optimizer.step()
         print('Loss = {}'.format(loss.data[0]))
 
-        print(np.mean(out_.data.numpy().argmax(axis=1) == out.data.numpy()))
+        print(np.mean(out_.data.cpu().numpy().argmax(axis=1) == out.data.cpu().numpy()))
 
