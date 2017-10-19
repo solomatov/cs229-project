@@ -5,10 +5,6 @@ from torch.autograd import Variable
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from fasttrain.data import load_cifar10
-from fasttrain.model import NaiveCNN
-
-
 
 class Runner:
     def __init__(self, net, dataset, batch_size=128, use_cuda=torch.cuda.is_available(), loss_fun=nn.CrossEntropyLoss()):
@@ -71,14 +67,3 @@ class Runner:
 
     def __accuracy(self, y, y_):
         return torch.mean(torch.eq(y_, y).type(torch.FloatTensor)).data[0]
-
-
-net = NaiveCNN()
-train = load_cifar10(train=True)
-test = load_cifar10(train=False)
-
-runner = Runner(net, train, batch_size=128)
-runner.run()
-
-print('Test accuracy: {}'.format(runner.evaluate(test)))
-print('Train accuracy: {}'.format(runner.evaluate(train)))
