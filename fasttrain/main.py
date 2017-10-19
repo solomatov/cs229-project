@@ -1,14 +1,11 @@
-from torch.utils.data import DataLoader
-from torch.autograd import Variable
-
-import torch.optim as optim
-import torch.nn as nn
-import torch.tensor as tensor
 import torch
-import numpy as np
+import torch.nn as nn
+import torch.optim as optim
+from torch.autograd import Variable
+from torch.utils.data import DataLoader
 
-from fasttrain.model import NaiveCNN
 from fasttrain.data import load_cifar10
+from fasttrain.model import NaiveCNN
 
 
 class Runner:
@@ -30,22 +27,29 @@ class Runner:
         for e in range(epochs):
             print('Epoch = {}'.format(e))
             for i, data in enumerate(self.__loader, 0):
-                X_batch, y_batch = self.optimize(data[0]), self.optimize(data[1])
+                X_batch, y_batch = self.__opt(data[0]), self.__opt(data[1])
                 X_var, y_var = Variable(X_batch), Variable(y_batch)
 
                 optimizer.zero_grad()
-                out_ = net(X_var)
+                y_ = net(X_var)
 
-                loss = self.__loss_fun(out_, y_var)
+                loss = self.__loss_fun(y_, y_var)
                 loss.backward()
                 optimizer.step()
 
+                _, y_ = torch.max(y_, dim=1)
+
+                print(self.__accuracy(y_var, y_))
+
                 print('Loss = {}'.format(loss.data[0]))
 
-    def optimize(self, t):
+    def __opt(self, t):
         if self.__use_cuda:
             return t.cuda()
         return t
+
+    def __accuracy(self, y, y_):
+        return torch.mean(torch.eq(y_, y).type(torch.FloatTensor)).data[0]
 
 
 has_cuda = torch.cuda.is_available()
