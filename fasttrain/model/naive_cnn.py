@@ -26,7 +26,7 @@ class NaiveCNN(nn.Module):
         self.conv4_2 = nn.Conv2d(512, 512, 3, padding=1)
         self.conv4_2_bn = nn.BatchNorm2d(512)
 
-        self.fc1 = nn.Linear(512, 256)
+        self.fc1 = nn.Linear(2048, 256)
         self.fc2 = nn.Linear(256, 10)
 
     def forward(self, x):
