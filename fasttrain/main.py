@@ -10,7 +10,12 @@ import numpy as np
 from fasttrain.model import NaiveCNN
 from fasttrain.data import load_cifar10
 
+has_cuda = torch.cuda.is_available()
+
 net = NaiveCNN()
+
+if has_cuda:
+    net = net.cuda()
 
 train = load_cifar10(train=True)
 test = load_cifar10(train=False)
@@ -24,6 +29,10 @@ for e in range(10):
 
     for i, data in enumerate(train_loader, 0):
         X, y = data
+
+        if has_cuda:
+            X, y = X.cuda(), y.cuda()
+
         inp, out = Variable(X), Variable(y)
 
         optimizer.zero_grad()
