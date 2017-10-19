@@ -26,10 +26,8 @@ class NaiveCNN(nn.Module):
         self.conv4_2 = nn.Conv2d(512, 512, 3, padding=1)
         self.conv4_2_bn = nn.BatchNorm2d(512)
 
-        self.fc1 = nn.Linear(2048, 1024)
-        self.fc2 = nn.Linear(1024, 512)
-        self.fc3 = nn.Linear(512, 256)
-        self.fc4 = nn.Linear(256, 10)
+        self.fc1 = nn.Linear(512, 256)
+        self.fc2 = nn.Linear(256, 10)
 
     def forward(self, x):
         l1_1 = F.relu(self.conv1_1(x))
@@ -60,7 +58,5 @@ class NaiveCNN(nn.Module):
 
         fc1 = F.relu(self.fc1(flat))
         fc2 = F.relu(self.fc2(fc1))
-        fc3 = F.relu(self.fc3(fc2))
-        fc4 = self.fc4(fc3)
 
         return fc2
