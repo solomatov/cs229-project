@@ -15,7 +15,7 @@ net = NaiveCNN()
 train = load_cifar10(train=True)
 test = load_cifar10(train=False)
 
-train_loader = DataLoader(train, batch_size=128)
+train_loader = DataLoader(train, batch_size=128, num_workers=2)
 optimizer = optim.Adam(net.parameters(), lr=0.001)
 lossfun = nn.CrossEntropyLoss()
 
