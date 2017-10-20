@@ -32,7 +32,7 @@ class NaiveCNN(nn.Module):
         self.__conv4_2 = ConvUnit(512, 512)
         self.__conv4_3 = ConvUnit(512, 512)
 
-        self.__fc1 = nn.Linear(128, 64)
+        self.__fc1 = nn.Linear(2048, 64)
         self.__fc2 = nn.Linear(64, 10)
 
     def forward(self, x):
