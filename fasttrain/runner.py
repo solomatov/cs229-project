@@ -21,6 +21,7 @@ class Runner:
         optimizer = optim.Adam(self.__net.parameters(), lr=1e-4)
         loader = DataLoader(self.__dataset, batch_size=self.__batch_size, num_workers=2)
 
+        self.__net.train()
         for e in range(epochs):
             print('Epoch = {}'.format(e))
 
@@ -31,6 +32,7 @@ class Runner:
                 X_var, y_var = Variable(X_batch), Variable(y_batch)
 
                 optimizer.zero_grad()
+
                 y_ = self.__net(X_var)
 
                 loss = self.__loss_fun(y_, y_var)
@@ -50,6 +52,7 @@ class Runner:
         samples = 0
         total_correct = 0
 
+        self.__net.eval()
         for i, data in enumerate(loader, 0):
             X_batch, y_batch = self.__opt(data[0]), self.__opt(data[1])
             X_var, y_var = Variable(X_batch), Variable(y_batch)

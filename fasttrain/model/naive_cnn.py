@@ -12,6 +12,7 @@ class NaiveCNN(nn.Module):
         self.conv1_2_bn = nn.BatchNorm2d(64)
         self.conv1_3 = nn.Conv2d(64, 64, 3, padding=1)
         self.conv1_3_bn = nn.BatchNorm2d(64)
+        self.conv1_drop = nn.Dropout2d()
 
         self.conv2_1 = nn.Conv2d(64, 128, 3, padding=1)
         self.conv2_1_bn = nn.BatchNorm2d(128)
@@ -19,6 +20,7 @@ class NaiveCNN(nn.Module):
         self.conv2_2_bn = nn.BatchNorm2d(128)
         self.conv2_3 = nn.Conv2d(128, 128, 3, padding=1)
         self.conv2_3_bn = nn.BatchNorm2d(128)
+        self.conv2_drop = nn.Dropout2d()
 
         self.conv3_1 = nn.Conv2d(128, 256, 3, padding=1)
         self.conv3_1_bn = nn.BatchNorm2d(256)
@@ -26,6 +28,7 @@ class NaiveCNN(nn.Module):
         self.conv3_2_bn = nn.BatchNorm2d(256)
         self.conv3_3 = nn.Conv2d(256, 256, 3, padding=1)
         self.conv3_3_bn = nn.BatchNorm2d(256)
+        self.conv3_drop = nn.Dropout2d()
 
         self.conv4_1 = nn.Conv2d(256, 512, 3, padding=1)
         self.conv4_1_bn = nn.BatchNorm2d(512)
@@ -33,6 +36,7 @@ class NaiveCNN(nn.Module):
         self.conv4_2_bn = nn.BatchNorm2d(512)
         self.conv4_3 = nn.Conv2d(512, 512, 3, padding=1)
         self.conv4_3_bn = nn.BatchNorm2d(512)
+        self.conv4_drop = nn.Dropout2d()
 
         self.fc1 = nn.Linear(2048, 256)
         self.fc2 = nn.Linear(256, 10)
@@ -45,6 +49,7 @@ class NaiveCNN(nn.Module):
         l1_3 = F.relu(self.conv1_2(l1_2))
         l1_3 = self.conv1_2_bn(l1_3)
         l1 = F.max_pool2d(l1_3, 2)
+        l1 = self.conv1_drop(l1)
 
         l2_1 = F.relu(self.conv2_1(l1))
         l2_1 = self.conv2_1_bn(l2_1)
@@ -53,6 +58,7 @@ class NaiveCNN(nn.Module):
         l2_3 = F.relu(self.conv2_3(l2_2))
         l2_3 = self.conv2_3_bn(l2_3)
         l2 = F.max_pool2d(l2_3, 2)
+        l2 = self.conv2_drop(l2)
         
         l3_1 = F.relu(self.conv3_1(l2))
         l3_1 = self.conv3_1_bn(l3_1)
@@ -61,6 +67,7 @@ class NaiveCNN(nn.Module):
         l3_3 = F.relu(self.conv3_2(l3_2))
         l3_3 = self.conv3_2_bn(l3_3)
         l3 = F.max_pool2d(l3_3, 2)
+        l3 = self.conv3_drop(l3)
 
         l4_1 = F.relu(self.conv4_1(l3))
         l4_1 = self.conv4_1_bn(l4_1)
@@ -69,6 +76,7 @@ class NaiveCNN(nn.Module):
         l4_3 = F.relu(self.conv4_2(l4_2))
         l4_3 = self.conv4_2_bn(l4_3)
         l4 = F.max_pool2d(l4_3, 2)
+        l4 = self.conv4_drop(l4)
 
         flat = l4.view(l4.size()[0], -1)
 
