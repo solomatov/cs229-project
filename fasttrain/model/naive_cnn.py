@@ -32,8 +32,8 @@ class NaiveCNN(nn.Module):
         self.__conv4_2 = ConvUnit(512, 512)
         self.__conv4_3 = ConvUnit(512, 512)
 
-        self.__fc1 = nn.Linear(2048, 256)
-        self.__fc2 = nn.Linear(256, 10)
+        self.__fc1 = nn.Linear(128, 64)
+        self.__fc2 = nn.Linear(64, 10)
 
     def forward(self, x):
         l1_1 = self.__conv1_1(x)
@@ -59,6 +59,6 @@ class NaiveCNN(nn.Module):
         flat = l4.view(l4.size()[0], -1)
 
         fc1 = F.relu(self.__fc1(flat))
-        fc2 = F.relu(self.__fc2(fc1))
+        fc2 = self.__fc2(fc1)
 
         return fc2
