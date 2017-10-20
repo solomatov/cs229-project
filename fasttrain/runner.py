@@ -65,7 +65,7 @@ class Runner:
 
     def __opt(self, t):
         if self.__use_cuda:
-            return t.cuda(device_id=0)
+            return t.cuda()
         return t
 
     def __accuracy(self, y, y_):

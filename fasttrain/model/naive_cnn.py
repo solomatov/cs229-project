@@ -12,31 +12,26 @@ class ConvUnit(nn.Module):
         return F.relu(self.bn(self.conv(x)))
 
 
-class ConvSeq(nn.Module):
-    def __init__(self, n, in_channels, out_channels):
-        super(ConvSeq, self).__init__()
+class ConvTriple(nn.Module):
+    def __init__(self, in_channels, out_channels):
+        super(ConvTriple, self).__init__()
 
-        self.convs = []
-        prev = in_channels
-        for i in range(n):
-            self.convs.append(ConvUnit(prev, out_channels))
-            prev = out_channels
+        self.conv1 = ConvUnit(in_channels, out_channels)
+        self.conv2 = ConvUnit(out_channels, out_channels)
+        self.conv3 = ConvUnit(out_channels, out_channels)
 
     def forward(self, x):
-        result = x
-        for c in self.convs:
-            result = c(result)
-        return result
+        return self.conv3(self.conv2(self.conv1(x)))
 
 
 class NaiveCNN(nn.Module):
     def __init__(self):
         super(NaiveCNN, self).__init__()
 
-        self.conv1 = ConvSeq(3, 3, 64)
-        self.conv2 = ConvSeq(3, 64, 128)
-        self.conv3 = ConvSeq(3, 128, 256)
-        self.conv4 = ConvSeq(3, 256, 512)
+        self.conv1 = ConvTriple(3, 64)
+        self.conv2 = ConvTriple(64, 128)
+        self.conv3 = ConvTriple(128, 256)
+        self.conv4 = ConvTriple(256, 512)
 
         self.fc1 = nn.Linear(2048, 64)
         self.__fc2 = nn.Linear(64, 10)
