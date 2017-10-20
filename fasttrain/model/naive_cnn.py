@@ -28,6 +28,7 @@ class ConvSeq(nn.Module):
             result = c(result)
         return result
 
+
 class NaiveCNN(nn.Module):
     def __init__(self):
         super(NaiveCNN, self).__init__()
