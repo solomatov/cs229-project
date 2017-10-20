@@ -15,7 +15,7 @@ class Runner:
         self.__loss_fun = loss_fun
 
         if self.__use_cuda:
-            self.__net = self.__net.cuda()
+            self.__net = self.__net.cuda(device_id=0)
 
     def run(self, epochs=1):
         optimizer = optim.Adam(self.__net.parameters(), lr=1e-4)
