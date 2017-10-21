@@ -8,11 +8,12 @@ from tqdm import tqdm
 
 
 class Runner:
-    def __init__(self, net, dataset, batch_size=128, use_cuda=torch.cuda.is_available(), loss_fun=nn.CrossEntropyLoss()):
+    def __init__(self, net, dataset, batch_size=128, use_cuda=torch.cuda.is_available(), loss_fun=nn.CrossEntropyLoss(), use_all_gpus=True):
         self.__net = net
         self.__dataset = dataset
         self.__batch_size = batch_size
         self.__use_cuda = use_cuda
+        self.__use_all_gpus = use_all_gpus
         self.__loss_fun = loss_fun
 
         if self.__use_cuda:
@@ -77,7 +78,7 @@ class Runner:
         return torch.mean(torch.eq(y_, y).type(torch.FloatTensor)).data[0]
 
     def __get_train_net(self):
-        if self.__use_cuda:
+        if self.__use_cuda and self.__use_all_gpus:
             net = parallel.DataParallel(self.__net)
         else:
             net = self.__net
