@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import torch.nn.parallel as parallel
 import torch.optim as optim
 from torch.autograd import Variable
 from torch.utils.data import DataLoader
@@ -22,6 +23,8 @@ class Runner:
         loader = DataLoader(self.__dataset, batch_size=self.__batch_size, num_workers=2)
 
         self.__net.train()
+        net = self.__get_train_net()
+
         for e in range(epochs):
             print('Epoch = {}'.format(e))
 
@@ -33,7 +36,7 @@ class Runner:
 
                 optimizer.zero_grad()
 
-                y_ = self.__net(X_var)
+                y_ = net(X_var)
 
                 loss = self.__loss_fun(y_, y_var)
                 loss.backward()
@@ -53,10 +56,12 @@ class Runner:
         total_correct = 0
 
         self.__net.eval()
+        net = self.__get_train_net()
+
         for i, data in enumerate(loader, 0):
             X_batch, y_batch = self.__opt(data[0]), self.__opt(data[1])
             X_var, y_var = Variable(X_batch), Variable(y_batch)
-            y_ = torch.max(self.__net(X_var), dim=1)[1]
+            y_ = torch.max(net(X_var), dim=1)[1]
 
             samples += y_batch.size()[0]
             total_correct += torch.sum(torch.eq(y_, y_var)).data[0]
@@ -70,3 +75,10 @@ class Runner:
 
     def __accuracy(self, y, y_):
         return torch.mean(torch.eq(y_, y).type(torch.FloatTensor)).data[0]
+
+    def __get_train_net(self):
+        if self.__use_cuda:
+            net = parallel.DataParallel(self.__net)
+        else:
+            net = self.__net
+        return net
