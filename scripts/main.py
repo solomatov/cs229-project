@@ -6,7 +6,7 @@ net = NaiveCNN()
 train = load_cifar10(train=True)
 test = load_cifar10(train=False)
 
-runner = Runner(net, train, batch_size=128)
+runner = Runner(net, train, batch_size=512)
 runner.run(epochs=20)
 
 print('Test accuracy: {}'.format(runner.evaluate(test)))
