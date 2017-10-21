@@ -9,7 +9,7 @@ class ConvUnit(nn.Module):
         self.bn = nn.BatchNorm2d(out_channels)
 
     def forward(self, x):
-        return F.relu(self.bn(self.conv(x)))
+        return F.relu(self.bn(self.conv(x)), inplace=True)
 
 
 class ConvTriple(nn.Module):
