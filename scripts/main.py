@@ -1,13 +1,16 @@
 from fasttrain import Runner
-from fasttrain.data import load_cifar10
+from fasttrain.data import load_cifar10, SublistDataset
 from fasttrain.model import NaiveCNN
 
 net = NaiveCNN()
 train = load_cifar10(train=True)
-test = load_cifar10(train=False)
+all_test = load_cifar10(train=False)
 
-runner = Runner(net, train, batch_size=512)
+test = SublistDataset(all_test, 1000, 10000)
+dev = SublistDataset(all_test, 0, 1000)
+
+runner = Runner(net, train, dev, batch_size=512)
 runner.run(epochs=20)
 
-print('Test accuracy: {}'.format(runner.evaluate(test)))
+print('Test accuracy: {}'.format(runner.evaluate(all_test)))
 print('Train accuracy: {}'.format(runner.evaluate(train)))

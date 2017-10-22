@@ -8,9 +8,10 @@ from tqdm import tqdm
 
 
 class Runner:
-    def __init__(self, net, dataset, batch_size=128, use_cuda=torch.cuda.is_available(), loss_fun=nn.CrossEntropyLoss(), use_all_gpus=True):
+    def __init__(self, net, train, dev, batch_size=128, use_cuda=torch.cuda.is_available(), loss_fun=nn.CrossEntropyLoss(), use_all_gpus=True):
         self.__net = net
-        self.__dataset = dataset
+        self.__train = train
+        self.__dev = dev
         self.__batch_size = batch_size
         self.__use_cuda = use_cuda
         self.__use_all_gpus = use_all_gpus
@@ -21,13 +22,14 @@ class Runner:
 
     def run(self, epochs=1):
         optimizer = optim.Adam(self.__net.parameters(), lr=1e-4)
-        loader = DataLoader(self.__dataset, batch_size=self.__batch_size, num_workers=2)
+        loader = DataLoader(self.__train, batch_size=self.__batch_size, num_workers=2)
 
         self.__net.train()
         net = self.__get_train_net()
 
         for e in range(epochs):
             print('Epoch = {}'.format(e))
+            print('Dev Accuracy = {}'.format(self.evaluate(self.__dev)))
 
             t = tqdm(total=len(loader))
 
