@@ -24,13 +24,13 @@ class Runner:
         optimizer = optim.Adam(self.__net.parameters(), lr=1e-4)
         loader = DataLoader(self.__train, batch_size=self.__batch_size, num_workers=2)
 
-        self.__net.train()
         net = self.__get_train_net()
 
         for e in range(epochs):
             print('Epoch = {}'.format(e))
             print('Dev Accuracy = {}'.format(self.evaluate(self.__dev)))
 
+            self.__net.train()
             t = tqdm(total=len(loader))
 
             for i, data in enumerate(loader, 0):
