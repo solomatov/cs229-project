@@ -31,11 +31,12 @@ class DownBlock(nn.Module):
         self.conv2 = make_conv(out_chan)
         self.bn2 = nn.BatchNorm2d(out_chan)
         self.conv_down = nn.Conv2d(in_chan, out_chan, kernel_size=(1, 1), stride=2)
+        self.bn_down = nn.BatchNorm2d(out_chan)
 
     def forward(self, x):
         c1 = F.relu(self.bn1(self.conv1(x)))
         c2 = F.relu(self.bn2(self.conv2(c1)))
-        down = self.conv_down(x)
+        down = self.bn_down(self.conv_down(x))
         return down + c2
 
 
