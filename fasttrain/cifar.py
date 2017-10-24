@@ -9,7 +9,7 @@ def train_on_cifar(net, batch_size=128, epochs=10, use_all_gpus=True):
     print('Batch size = {}'.format(batch_size))
     print('Epochs = {}'.format(epochs))
 
-    start_time = datetime.now().microsecond
+    start_time = datetime.now()
 
     train = load_cifar10(train=True)
     all_test = load_cifar10(train=False)
@@ -23,4 +23,4 @@ def train_on_cifar(net, batch_size=128, epochs=10, use_all_gpus=True):
     print('Test accuracy: {}'.format(runner.evaluate(all_test)))
     print('Train accuracy: {}'.format(runner.evaluate(train)))
 
-    print('It took {} ms to train'.format(datetime.now().microsecond - start_time))
+    print('It took {} s to train'.format((datetime.now() - start_time).total_seconds()))
