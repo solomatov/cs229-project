@@ -2,7 +2,7 @@ from fasttrain import Runner
 from fasttrain.data import load_cifar10, SublistDataset
 from fasttrain.model import NaiveCNN, ResNetCIFAR
 
-net = NaiveCNN()
+net = ResNetCIFAR(20)
 train = load_cifar10(train=True)
 all_test = load_cifar10(train=False)
 
