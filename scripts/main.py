@@ -10,7 +10,7 @@ test = SublistDataset(all_test, 1000, 10000)
 dev = SublistDataset(all_test, 0, 1000)
 
 runner = Runner(net, train, dev, batch_size=128)
-runner.run(epochs=20)
+runner.run(epochs=100)
 
 print('Test accuracy: {}'.format(runner.evaluate(all_test)))
 print('Train accuracy: {}'.format(runner.evaluate(train)))
