@@ -4,7 +4,7 @@ from . import Runner
 from .data import load_cifar10, SublistDataset
 
 
-def train_on_cifar(net, batch_size=128, epochs=10):
+def train_on_cifar(net, batch_size=128, epochs=10, use_all_gpus=True):
     print('Training {}'.format(type(net).__name__))
     print('Batch size = {}'.format(batch_size))
     print('Epochs = {}'.format(epochs))
@@ -17,7 +17,7 @@ def train_on_cifar(net, batch_size=128, epochs=10):
     test = SublistDataset(all_test, 1000, 10000)
     dev = SublistDataset(all_test, 0, 1000)
 
-    runner = Runner(net, train, dev, batch_size=batch_size)
+    runner = Runner(net, train, dev, batch_size=batch_size, use_all_gpus=use_all_gpus)
     runner.run(epochs=epochs)
 
     print('Test accuracy: {}'.format(runner.evaluate(all_test)))
