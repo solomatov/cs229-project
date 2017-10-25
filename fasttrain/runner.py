@@ -20,8 +20,12 @@ class Runner:
         if self.__use_cuda:
             self.__net = self.__net.cuda()
 
-    def run(self, epochs=1):
-        optimizer = optim.Adam(self.__net.parameters(), lr=1e-4)
+    def run(self, epochs=1, opt_factory=None):
+        if not opt_factory:
+            opt = optim.Adam(self.__net.parameters(), lr=1e-4)
+        else:
+            opt = opt_factory(self.__net.parameters())
+
         loader = DataLoader(self.__train, batch_size=self.__batch_size, num_workers=2)
 
         net = self.__get_train_net()
@@ -37,13 +41,13 @@ class Runner:
                 X_batch, y_batch = self.__opt(data[0]), self.__opt(data[1])
                 X_var, y_var = Variable(X_batch), Variable(y_batch)
 
-                optimizer.zero_grad()
+                opt.zero_grad()
 
                 y_ = net(X_var)
 
                 loss = self.__loss_fun(y_, y_var)
                 loss.backward()
-                optimizer.step()
+                opt.step()
 
                 _, y_ = torch.max(y_, dim=1)
 
