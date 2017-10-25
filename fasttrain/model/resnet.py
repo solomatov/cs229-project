@@ -18,7 +18,7 @@ class SimpleBlock(nn.Module):
     def forward(self, x):
         c1 = F.relu(self.bn1(self.conv1(x)))
         c2 = F.relu(self.bn2(self.conv2(c1)))
-        return x + c2
+        return F.relu(x + c2)
 
 
 class DownBlock(nn.Module):
@@ -41,7 +41,7 @@ class DownBlock(nn.Module):
         c1 = F.relu(self.bn1(self.conv1(x)))
         c2 = F.relu(self.bn2(self.conv2(c1)))
         down = self.bn_down(self.conv_down(x))
-        return down + c2
+        return F.relu(down + c2)
 
 
 class ResNetCIFAR(nn.Module):
