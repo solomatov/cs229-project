@@ -20,7 +20,11 @@ def train_on_cifar(net, batch_size=128, epochs=10, use_all_gpus=True, opt_factor
     runner = Runner(net, train, dev, batch_size=batch_size, use_all_gpus=use_all_gpus)
     runner.run(epochs=epochs, opt_factory=opt_factory)
 
-    print('Test accuracy: {}'.format(runner.evaluate(all_test)))
-    print('Train accuracy: {}'.format(runner.evaluate(train)))
+    train_acc = runner.evaluate(all_test)
+    print('Test accuracy: {}'.format(train_acc))
+    test_acc = runner.evaluate(train)
+    print('Train accuracy: {}'.format(test_acc))
 
-    print('It took {} s to train'.format((datetime.now() - start_time).total_seconds()))
+    print('It took {} s to train'.format(datetime.now() - start_time))
+
+    return train_acc, test_acc
