@@ -20,6 +20,8 @@ class Runner:
         if self.__use_cuda:
             self.__net = self.__net.cuda()
 
+        self.__history = []
+
     def run(self, epochs=1, opt_factory=None):
         if not opt_factory:
             opt = optim.Adam(self.__net.parameters(), lr=1e-4)
@@ -32,7 +34,9 @@ class Runner:
 
         for e in range(epochs):
             print('Epoch = {}'.format(e))
-            print('Dev Accuracy = {}'.format(self.evaluate(self.__dev)))
+            dev_acc = self.evaluate(self.__dev)
+            print('Dev Accuracy = {}'.format(dev_acc))
+            self.__history.append(dev_acc)
 
             self.__net.train()
             t = tqdm(total=len(loader))
@@ -74,6 +78,9 @@ class Runner:
             total_correct += torch.sum(torch.eq(y_, y_var)).data[0]
 
         return total_correct / samples
+
+    def get_history(self):
+        return self.__history
 
     def __opt(self, t):
         if self.__use_cuda:

@@ -1,4 +1,5 @@
 from datetime import datetime
+import numpy as np
 
 from . import Runner
 from .data import load_cifar10, SublistDataset
@@ -26,5 +27,7 @@ def train_on_cifar(net, batch_size=128, epochs=10, use_all_gpus=True, opt_factor
     print('Train accuracy: {}'.format(test_acc))
 
     print('It took {} s to train'.format(datetime.now() - start_time))
+
+    np.savetxt('history.txt', runner.get_history())
 
     return train_acc, test_acc

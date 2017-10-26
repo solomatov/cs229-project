@@ -1,5 +1,6 @@
 from datetime import datetime
 
+import numpy as np
 import torch.optim as optim
 
 from fasttrain import Runner
