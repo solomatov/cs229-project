@@ -1,3 +1,3 @@
 from .scheduled import train_scheduled
 
-train_scheduled(20)
+train_scheduled(32)
