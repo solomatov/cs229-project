@@ -24,7 +24,7 @@ def train_scheduled(n):
 
     runner = Runner(net, train, dev, batch_size=batch_size, use_all_gpus=False)
 
-    wd = 0.00001
+    wd = 0.0001
     momentum = 0.9
 
     runner.run(epochs=80, opt_factory=lambda p: optim.SGD(p, lr=0.1, weight_decay=wd, momentum=momentum))
