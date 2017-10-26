@@ -36,7 +36,6 @@ class DownBlock(nn.Module):
         self.bn_down.weight.data.fill_(1)
         self.bn_down.bias.data.fill_(0)
 
-
     def forward(self, x):
         c1 = F.relu(self.bn1(self.conv1(x)))
         c2 = F.relu(self.bn2(self.conv2(c1)))
