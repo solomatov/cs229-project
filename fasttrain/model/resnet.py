@@ -17,7 +17,7 @@ class SimpleBlock(nn.Module):
 
     def forward(self, x):
         c1 = F.relu(self.bn1(self.conv1(x)))
-        c2 = F.relu(self.bn2(self.conv2(c1)))
+        c2 = self.bn2(self.conv2(c1))
         return F.relu(x + c2)
 
 
@@ -38,7 +38,7 @@ class DownBlock(nn.Module):
 
     def forward(self, x):
         c1 = F.relu(self.bn1(self.conv1(x)))
-        c2 = F.relu(self.bn2(self.conv2(c1)))
+        c2 = self.bn2(self.conv2(c1))
         down = self.bn_down(self.conv_down(x))
         return F.relu(down + c2)
 
