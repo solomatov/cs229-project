@@ -27,9 +27,9 @@ def train_scheduled(n):
     wd = 0.0001
     momentum = 0.9
 
-    runner.run(epochs=80, opt_factory=lambda p: optim.SGD(p, lr=0.1, weight_decay=wd, momentum=momentum))
-    runner.run(epochs=80, opt_factory=lambda p: optim.SGD(p, lr=0.01, weight_decay=wd, momentum=momentum))
-    runner.run(epochs=40, opt_factory=lambda p: optim.SGD(p, lr=0.001, weight_decay=wd, momentum=momentum))
+    runner.run(lambda p: optim.SGD(p, lr=0.1, weight_decay=wd, momentum=momentum), epochs=80)
+    runner.run(lambda p: optim.SGD(p, lr=0.01, weight_decay=wd, momentum=momentum), epochs=80)
+    runner.run(lambda p: optim.SGD(p, lr=0.001, weight_decay=wd, momentum=momentum), epochs=40)
 
     train_acc = runner.evaluate(all_test)
     print('Test accuracy: {}'.format(train_acc))

@@ -21,12 +21,8 @@ class Runner:
 
         self.__history = []
 
-    def run(self, epochs=1, opt_factory=None):
-        if not opt_factory:
-            opt = optim.Adam(self.__net.parameters(), lr=1e-4)
-        else:
-            opt = opt_factory(self.__net.parameters())
-
+    def run(self, opt_factory, epochs=1):
+        opt = opt_factory(self.__net.parameters())
         loader = DataLoader(self.__train, batch_size=self.__batch_size, num_workers=2)
 
         net = self.__get_train_net()
