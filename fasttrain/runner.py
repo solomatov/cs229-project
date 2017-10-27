@@ -80,7 +80,7 @@ class Runner:
         return total_correct / samples
 
     def get_history(self):
-        return self.__history
+        return list(self.__history)
 
     def __opt(self, t):
         if self.__use_cuda:
