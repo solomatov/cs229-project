@@ -1,6 +1,5 @@
 from datetime import datetime
 
-import numpy as np
 import torch.optim as optim
 
 from fasttrain import Runner
@@ -23,7 +22,7 @@ def train_scheduled(n):
     test = SublistDataset(all_test, 1000, 10000)
     dev = SublistDataset(all_test, 0, 1000)
 
-    runner = Runner(net, train, dev, batch_size=batch_size, use_all_gpus=False)
+    runner = Runner(net, train, dev, batch_size=batch_size)
 
     wd = 0.0001
     momentum = 0.9
