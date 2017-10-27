@@ -24,7 +24,6 @@ class Runner:
     def run(self, opt_factory, epochs=1):
         opt = opt_factory(self.__net.parameters())
         loader = DataLoader(self.__train, batch_size=self.__batch_size, num_workers=2)
-
         net = self.__get_train_net()
 
         for e in range(epochs):
