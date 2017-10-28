@@ -1,8 +1,7 @@
 from datetime import datetime
-import numpy as np
 import torch.optim as optim
 
-from . import Runner
+from . import Runner, VisdomReporter
 from .data import load_cifar10, SublistDataset
 
 
@@ -20,6 +19,7 @@ def train_on_cifar(net, batch_size=128, epochs=10):
     dev = SublistDataset(all_test, 0, 1000)
 
     runner = Runner(net, train, dev, batch_size=batch_size)
+    runner.on_epoch(VisdomReporter())
     runner.run(lambda p: optim.Adam(p, lr=1e-4), epochs=epochs)
 
     train_acc = runner.evaluate(all_test)
@@ -28,7 +28,5 @@ def train_on_cifar(net, batch_size=128, epochs=10):
     print('Train accuracy: {}'.format(test_acc))
 
     print('It took {} s to train'.format(datetime.now() - start_time))
-
-    np.savetxt('history.txt', runner.get_history())
 
     return train_acc, test_acc

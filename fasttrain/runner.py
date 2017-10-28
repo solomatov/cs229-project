@@ -19,7 +19,7 @@ class Runner:
         if self.__use_cuda:
             self.__net = self.__net.cuda()
 
-        self.__history = []
+        self.__on_epoch = None
 
     def run(self, opt_factory, epochs=1):
         opt = opt_factory(self.__net.parameters())
@@ -30,7 +30,8 @@ class Runner:
             print('Epoch = {}'.format(e))
             dev_acc = self.evaluate(self.__dev)
             print('Dev Accuracy = {}'.format(dev_acc))
-            self.__history.append(dev_acc)
+            if self.__on_epoch:
+                self.__on_epoch(dev_acc)
 
             self.__net.train()
             t = tqdm(total=len(loader))
@@ -73,8 +74,8 @@ class Runner:
 
         return total_correct / samples
 
-    def get_history(self):
-        return list(self.__history)
+    def on_epoch(self, handler):
+        self.__on_epoch = handler
 
     def __opt(self, t):
         if self.__use_cuda:
