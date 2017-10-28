@@ -23,7 +23,7 @@ def train_scheduled(n, batch_size=128):
     dev = SublistDataset(all_test, 0, 1000)
 
     runner = Runner(net, train, dev, batch_size=batch_size)
-    runner.on_epoch(VisdomReporter('{} bs={}'.format(model_name, batch_size)))
+    runner.on_epoch(VisdomReporter('{} batch={}'.format(model_name, batch_size)))
 
     wd = 0.0001
     momentum = 0.9
