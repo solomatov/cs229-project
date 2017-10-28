@@ -2,16 +2,16 @@ from datetime import datetime
 
 import torch.optim as optim
 
-from fasttrain import Runner
+from fasttrain import Runner, VisdomReporter
 from fasttrain.data import load_cifar10, SublistDataset
 from fasttrain.model import ResNetCIFAR
 
 
-def train_scheduled(n):
+def train_scheduled(n, batch_size=128):
     net = ResNetCIFAR(n)
-    batch_size = 128
 
-    print('Training {}'.format(type(net).__name__))
+    model_name = type(net).__name__
+    print('Training {}'.format(model_name))
     print('Batch size = {}'.format(batch_size))
 
     start_time = datetime.now()
@@ -23,6 +23,7 @@ def train_scheduled(n):
     dev = SublistDataset(all_test, 0, 1000)
 
     runner = Runner(net, train, dev, batch_size=batch_size)
+    runner.on_epoch(VisdomReporter('{} bs={}'.format(model_name, batch_size)))
 
     wd = 0.0001
     momentum = 0.9
