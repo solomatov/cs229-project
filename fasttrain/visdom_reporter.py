@@ -10,7 +10,7 @@ class VisdomReporter:
 
     def __call__(self, acc):
         if not self.__win:
-            self.__win = self.__visdom.line(np.array([0]), np.array([acc]))
+            self.__win = self.__visdom.line(np.array([acc]), np.array([0]))
         else:
             self.__epoch += 1
-            self.__visdom.line(np.array([self.__epoch]), np.array([acc]), win=self.__win, update='append')
+            self.__visdom.line(np.array([acc]), np.array([self.__epoch]), win=self.__win, update='append')
