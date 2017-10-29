@@ -73,9 +73,9 @@ class Runner:
             X_batch, y_batch = self.__convert(data[0]), self.__convert(data[1])
             X_var, y_var = Variable(X_batch), Variable(y_batch)
             y_ = torch.max(net(X_var), dim=1)[1]
-
             samples += y_batch.size()[0]
-            total_correct += torch.sum(torch.eq(y_, y_var)).data[0]
+
+            total_correct += torch.sum(self.__eq(y, y_)).data[0]
 
         return total_correct / samples
 
@@ -91,7 +91,10 @@ class Runner:
         return result
 
     def __accuracy(self, y, y_):
-        return torch.mean(torch.eq(y_.type(torch.FloatTensor), y.type(torch.FloatTensor)).type(torch.FloatTensor)).data[0]
+        return torch.mean(self.__eq(y, y_)).data[0]
+
+    def __eq(self, y, y_):
+        return torch.eq(y_.type(torch.FloatTensor), y.type(torch.FloatTensor)).type(torch.FloatTensor)
 
     def __get_train_net(self):
         if self.__use_cuda:
