@@ -49,7 +49,7 @@ class Runner:
 
                 y_ = net(X_var)
 
-                loss = self.__loss_fun(y_, y_var)
+                loss = self.__loss_fun(y_.float(), y_var.float())
                 loss.backward()
                 opt.step()
 
