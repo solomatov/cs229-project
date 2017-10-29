@@ -12,6 +12,7 @@ def train_scheduled(n, batch_size=128):
 
     model_name = type(net).__name__
     print('Training {}'.format(model_name))
+    print('N = {}'.format(n))
     print('Batch size = {}'.format(batch_size))
 
     start_time = datetime.now()
