@@ -20,6 +20,9 @@ class Runner:
         if self.__use_cuda:
             self.__net = self.__net.cuda()
 
+        if self.__half:
+            self.__net = self.__net.half()
+
         self.__on_epoch = None
 
     def run(self, opt_factory, epochs=1):
