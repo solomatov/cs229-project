@@ -11,7 +11,7 @@ def train_stacked(n, batch_size=128, half=False):
     net = ResNetCIFAR(n)
 
     if half:
-        net = net.half()
+        net = net.cuda().half()
 
     model_name = type(net).__name__
     print('Training {}'.format(model_name))
