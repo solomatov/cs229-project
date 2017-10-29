@@ -75,7 +75,7 @@ class Runner:
             y_ = torch.max(net(X_var), dim=1)[1]
             samples += y_batch.size()[0]
 
-            total_correct += torch.sum(self.__eq(y, y_)).data[0]
+            total_correct += torch.sum(self.__eq(y_var, y_)).data[0]
 
         return total_correct / samples
 
