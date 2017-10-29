@@ -26,7 +26,7 @@ def train_stacked(n, batch_size=128, half=False):
     test = SublistDataset(all_test, 1000, 10000)
     dev = SublistDataset(all_test, 0, 1000)
 
-    runner = Runner(net, train, dev, batch_size=batch_size)
+    runner = Runner(net, train, dev, batch_size=batch_size, half=half)
     runner.on_epoch(VisdomReporter('{} batch={}'.format(model_name, batch_size)))
 
     wd = 0.0001

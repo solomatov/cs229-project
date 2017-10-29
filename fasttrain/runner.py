@@ -8,13 +8,14 @@ from tqdm import tqdm
 
 
 class Runner:
-    def __init__(self, net, train, dev, batch_size=128, use_cuda=torch.cuda.is_available(), loss_fun=nn.CrossEntropyLoss()):
+    def __init__(self, net, train, dev, batch_size=128, use_cuda=torch.cuda.is_available(), loss_fun=nn.CrossEntropyLoss(), half=False):
         self.__net = net
         self.__train = train
         self.__dev = dev
         self.__batch_size = batch_size
         self.__use_cuda = use_cuda
         self.__loss_fun = loss_fun
+        self.__half = half
 
         if self.__use_cuda:
             self.__net = self.__net.cuda()
@@ -38,6 +39,11 @@ class Runner:
 
             for i, data in enumerate(loader, 0):
                 X_batch, y_batch = self.__opt(data[0]), self.__opt(data[1])
+
+                if self.__half:
+                    X_batch = X_batch.half()
+                    y_batch = y_batch.half()
+
                 X_var, y_var = Variable(X_batch), Variable(y_batch)
 
                 opt.zero_grad()
