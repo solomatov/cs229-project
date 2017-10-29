@@ -7,7 +7,7 @@ from fasttrain.data import load_cifar10, SublistDataset
 from fasttrain.model import ResNetCIFAR
 
 
-def train_scheduled(n, batch_size=128):
+def train_scheduled_baseline(n, batch_size=128):
     net = ResNetCIFAR(n)
 
     model_name = type(net).__name__
@@ -29,11 +29,9 @@ def train_scheduled(n, batch_size=128):
     wd = 0.0001
     momentum = 0.9
 
-    lr_scaling = batch_size / 128
-
-    runner.run(lambda p: optim.SGD(p, lr=0.1 * lr_scaling, weight_decay=wd, momentum=momentum), epochs=80)
-    runner.run(lambda p: optim.SGD(p, lr=0.01 * lr_scaling, weight_decay=wd, momentum=momentum), epochs=80)
-    runner.run(lambda p: optim.SGD(p, lr=0.001 * lr_scaling, weight_decay=wd, momentum=momentum), epochs=40)
+    runner.run(lambda p: optim.SGD(p, lr=0.1, weight_decay=wd, momentum=momentum), epochs=80)
+    runner.run(lambda p: optim.SGD(p, lr=0.01, weight_decay=wd, momentum=momentum), epochs=80)
+    runner.run(lambda p: optim.SGD(p, lr=0.001, weight_decay=wd, momentum=momentum), epochs=40)
 
     train_acc = runner.evaluate(all_test)
     print('Test accuracy: {}'.format(train_acc))
