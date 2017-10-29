@@ -8,20 +8,16 @@ from tqdm import tqdm
 
 
 class Runner:
-    def __init__(self, net, train, dev, batch_size=128, use_cuda=torch.cuda.is_available(), loss_fun=nn.CrossEntropyLoss(), half=False):
+    def __init__(self, net, train, dev, batch_size=128, use_cuda=torch.cuda.is_available(), loss_fun=nn.CrossEntropyLoss()):
         self.__net = net
         self.__train = train
         self.__dev = dev
         self.__batch_size = batch_size
         self.__use_cuda = use_cuda
         self.__loss_fun = loss_fun
-        self.__half = half
 
         if self.__use_cuda:
             self.__net = self.__net.cuda()
-
-        if self.__half:
-            self.__net = self.__net.half()
 
         self.__on_epoch = None
 
@@ -86,15 +82,13 @@ class Runner:
         result = t
         if self.__use_cuda:
             result = result.cuda()
-        if self.__half:
-            result = result.half()
         return result
 
     def __accuracy(self, y, y_):
         return torch.mean(self.__eq(y, y_)).data[0]
 
     def __eq(self, y, y_):
-        return torch.eq(y_.type(torch.FloatTensor), y.type(torch.FloatTensor)).type(torch.FloatTensor)
+        return torch.eq(y_, y).type(torch.FloatTensor)
 
     def __get_train_net(self):
         if self.__use_cuda:

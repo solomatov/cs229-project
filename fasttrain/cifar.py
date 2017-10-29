@@ -19,7 +19,7 @@ def train_on_cifar(net, batch_size=128, epochs=10):
     dev = SublistDataset(all_test, 0, 1000)
 
     runner = Runner(net, train, dev, batch_size=batch_size)
-    runner.on_epoch(VisdomReporter())
+    runner.on_epoch(VisdomReporter(type(net).__name__))
     runner.run(lambda p: optim.Adam(p, lr=1e-4), epochs=epochs)
 
     train_acc = runner.evaluate(all_test)
