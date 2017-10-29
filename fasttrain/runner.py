@@ -41,11 +41,7 @@ class Runner:
             t = tqdm(total=len(loader))
 
             for i, data in enumerate(loader, 0):
-                X_batch, y_batch = self.__opt(data[0]), self.__opt(data[1])
-
-                if self.__half:
-                    X_batch = X_batch.half()
-                    y_batch = y_batch.half()
+                X_batch, y_batch = self.__convert(data[0]), self.__convert(data[1])
 
                 X_var, y_var = Variable(X_batch), Variable(y_batch)
 
@@ -74,7 +70,7 @@ class Runner:
         net = self.__get_train_net()
 
         for i, data in enumerate(loader, 0):
-            X_batch, y_batch = self.__opt(data[0]), self.__opt(data[1])
+            X_batch, y_batch = self.__convert(data[0]), self.__convert(data[1])
             X_var, y_var = Variable(X_batch), Variable(y_batch)
             y_ = torch.max(net(X_var), dim=1)[1]
 
@@ -86,10 +82,13 @@ class Runner:
     def on_epoch(self, handler):
         self.__on_epoch = handler
 
-    def __opt(self, t):
+    def __convert(self, t):
+        result = t
         if self.__use_cuda:
-            return t.cuda()
-        return t
+            result = result.cuda()
+        if self.__half:
+            result = result.half()
+        return result
 
     def __accuracy(self, y, y_):
         return torch.mean(torch.eq(y_, y).type(torch.FloatTensor)).data[0]
