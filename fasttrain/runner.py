@@ -91,7 +91,7 @@ class Runner:
         return result
 
     def __accuracy(self, y, y_):
-        return torch.mean(torch.eq(y_, y).type(torch.FloatTensor)).data[0]
+        return torch.mean(torch.eq(y_.type(torch.FloatTensor), y.type(torch.FloatTensor)).type(torch.FloatTensor)).data[0]
 
     def __get_train_net(self):
         if self.__use_cuda:
