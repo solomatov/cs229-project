@@ -45,6 +45,9 @@ class DownBlock(nn.Module):
         self.conv_down = nn.Conv2d(in_chan, self.out_chan, kernel_size=(1, 1), stride=2, bias=False)
         self.bn_down = nn.BatchNorm2d(self.out_chan)
 
+        self.bn_down.weight.data.fill_(1)
+        self.bn_down.bias.data.fill_(0)
+
 
 class OriginalDownBlock(DownBlock):
     def __init__(self, in_chan):
