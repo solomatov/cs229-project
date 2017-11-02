@@ -7,7 +7,7 @@ from fasttrain.data import load_cifar10, SublistDataset
 from fasttrain.model import ResNetCIFAR
 
 
-def train_stacked(n, batch_size=128):
+def train_stacked(n, batch_size=128, base_epoch=40):
     net = ResNetCIFAR(n)
 
     model_name = type(net).__name__
@@ -33,12 +33,14 @@ def train_stacked(n, batch_size=128):
         return lambda p: optim.SGD(p, lr, weight_decay=wd, momentum=momentum)
 
     lr_scaling = batch_size / 128
-    for i in range(int(lr_scaling + 1)):
+
+    warmup_step = 2
+    for i in range(int(lr_scaling + 1), step=warmup_step):
         runner.run(optim_factory(i * 0.1), epochs=1)
 
-    runner.run(optim_factory(0.1 * lr_scaling), epochs=80)
-    runner.run(optim_factory(0.01 * lr_scaling), epochs=80)
-    runner.run(optim_factory(0.001 * lr_scaling), epochs=40)
+    runner.run(optim_factory(0.1 * lr_scaling), epochs=base_epoch*2)
+    runner.run(optim_factory(0.01 * lr_scaling), epochs=base_epoch*2)
+    runner.run(optim_factory(0.001 * lr_scaling), epochs=base_epoch)
 
     train_acc = runner.evaluate(all_test)
     print('Test accuracy: {}'.format(train_acc))
