@@ -8,7 +8,7 @@ from fasttrain.model import ResNetCIFAR
 
 
 def train_stacked(n, batch_size=128, base_epoch=40):
-    net = ResNetCIFAR(n)
+    net = ResNetCIFAR(n, pre_activated=True, stochastic_depth=True)
 
     model_name = type(net).__name__
     print('Training {}'.format(model_name))
