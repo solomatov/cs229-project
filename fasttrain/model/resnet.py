@@ -82,7 +82,7 @@ class DownBlock(nn.Module):
 
 
 class ResNetCIFAR(nn.Module):
-    def __init__(self, n, pre_activated=False, stochastic_depth=False):
+    def __init__(self, n, pre_activated=False, stochastic_depth=None):
         super(ResNetCIFAR, self).__init__()
 
         self.pre_activated = pre_activated
@@ -91,16 +91,17 @@ class ResNetCIFAR(nn.Module):
         self.bn1 = nn.BatchNorm2d(16)
 
         if stochastic_depth:
-            prob = 0.5
+            from_prob = stochastic_depth['from'] or 1.0
+            to_prob = stochastic_depth['to'] or 0.5
         else:
-            prob = 1.0
+            from_prob = 1.0
+            to_prob = 1.0
 
-        start_prob = 1.0
         total_layers = 3 * n
         layers = 0
 
         def layer_prob():
-            return prob + (start_prob - prob) * (total_layers - layers) / total_layers
+            return to_prob + (from_prob - to_prob) * (total_layers - layers) / total_layers
 
         self.seq32_32 = nn.Sequential()
         for i in range(n):
