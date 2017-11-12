@@ -7,8 +7,8 @@ from fasttrain.data import load_cifar10, SublistDataset
 from fasttrain.model import ResNetCIFAR
 
 
-def train_stacked(n, batch_size=128, base_epoch=40, stochastic_depth=None):
-    net = ResNetCIFAR(n, pre_activated=False, stochastic_depth=stochastic_depth)
+def train_stacked(n, batch_size=128, base_epoch=40, stochastic_depth=None, pre_activated=True):
+    net = ResNetCIFAR(n, pre_activated=pre_activated, stochastic_depth=stochastic_depth)
 
     print('N = {}'.format(n))
     print('Batch size = {}'.format(batch_size))
@@ -23,7 +23,7 @@ def train_stacked(n, batch_size=128, base_epoch=40, stochastic_depth=None):
     dev = SublistDataset(all_test, 0, 1000)
 
     runner = Runner(net, train, dev, batch_size=batch_size)
-    runner.on_epoch(VisdomReporter('{} n={} batch={} sd={}'.format('ResNet', n, batch_size, stochastic_depth)))
+    runner.on_epoch(VisdomReporter('{} n={} batch={} pre_activated={} sd={}'.format('ResNet', n, batch_size, pre_activated, stochastic_depth)))
 
     wd = 0.0001
     momentum = 0.9
