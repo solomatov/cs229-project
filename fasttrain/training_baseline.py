@@ -33,9 +33,9 @@ def train_scheduled_baseline(n, batch_size=128):
     runner.run(lambda p: optim.SGD(p, lr=0.01, weight_decay=wd, momentum=momentum), epochs=80)
     runner.run(lambda p: optim.SGD(p, lr=0.001, weight_decay=wd, momentum=momentum), epochs=40)
 
-    train_acc = runner.evaluate(all_test)
-    print('Test accuracy: {}'.format(train_acc))
+    train_acc = runner.evaluate(test)
     test_acc = runner.evaluate(train)
-    print('Train accuracy: {}'.format(test_acc))
+    print('Test accuracy: {}'.format(test_acc))
+    print('Train accuracy: {}'.format(train_acc))
 
     print('It took {} s to train'.format(datetime.now() - start_time))
