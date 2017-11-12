@@ -64,6 +64,7 @@ class Runner:
 
         self.__net.eval()
         net = self.__get_train_net()
+        net.train(mode=False)
 
         for i, data in enumerate(loader, 0):
             X_batch, y_batch = self.__convert(data[0]), self.__convert(data[1])
