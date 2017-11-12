@@ -24,7 +24,7 @@ def train_stacked(n, batch_size=128, base_epoch=40, stochastic_depth=False):
     dev = SublistDataset(all_test, 0, 1000)
 
     runner = Runner(net, train, dev, batch_size=batch_size)
-    runner.on_epoch(VisdomReporter('{} batch={}'.format(model_name, batch_size)))
+    runner.on_epoch(VisdomReporter('{} batch={} sd={}'.format(model_name, batch_size, stochastic_depth)))
 
     wd = 0.0001
     momentum = 0.9
