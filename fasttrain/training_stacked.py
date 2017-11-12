@@ -7,11 +7,12 @@ from fasttrain.data import load_cifar10, SublistDataset
 from fasttrain.model import ResNetCIFAR
 
 
-def train_stacked(n, batch_size=128, base_epoch=40, stochastic_depth=False):
+def train_stacked(n, batch_size=128, base_epoch=40, stochastic_depth=None):
     net = ResNetCIFAR(n, pre_activated=False, stochastic_depth=stochastic_depth)
 
     print('N = {}'.format(n))
     print('Batch size = {}'.format(batch_size))
+    print('Stochastic depth = {}'.format(stochastic_depth))
 
     start_time = datetime.now()
 
