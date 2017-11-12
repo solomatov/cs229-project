@@ -24,11 +24,19 @@ class SimpleBlock(nn.Module):
         if self.pre_activated:
             c1 = self.conv1(F.relu(self.bn1(x)))
             c2 = self.conv2(F.relu(self.bn2(c1)))
-            return x + self.prob * c2
+
+            if not self.training:
+                c2 = self.prob * c2
+
+            return x + c2
         else:
             c1 = F.relu(self.bn1(self.conv1(x)))
             c2 = self.bn2(self.conv2(c1))
-            return F.relu(x + self.prob * c2)
+
+            if not self.training:
+                c2 = self.prob * c2
+
+            return F.relu(x + c2)
 
 
 class DownBlock(nn.Module):
@@ -60,7 +68,11 @@ class DownBlock(nn.Module):
             c1 = self.conv1(F.relu(self.bn1(x)))
             c2 = self.conv2(F.relu(self.bn2(c1)))
             down = self.bn_down(self.conv_down(x))
-            return down + self.prob * c2
+
+            if not self.training:
+                c2 = self.prob * c2
+
+            return down + c2
         else:
             if self.training and random.random() > self.prob:
                 return F.relu(self.bn_down(self.conv_down(x)))
@@ -68,7 +80,11 @@ class DownBlock(nn.Module):
             c1 = F.relu(self.bn1(self.conv1(x)))
             c2 = self.bn2(self.conv2(c1))
             down = self.bn_down(self.conv_down(x))
-            return F.relu(down + self.prob * c2)
+
+            if not self.training:
+                c2 = self.prob * c2
+
+            return F.relu(down + c2)
 
 
 class ResNetCIFAR(nn.Module):
