@@ -90,8 +90,7 @@ class ResNetCIFAR(nn.Module):
         layers = 0
 
         def layer_prob():
-            result = prob + (start_prob - prob) * (total_layers - layers) / total_layers
-            return result
+            return prob + (start_prob - prob) * (total_layers - layers) / total_layers
 
         self.seq32_32 = nn.Sequential()
         for i in range(n):
