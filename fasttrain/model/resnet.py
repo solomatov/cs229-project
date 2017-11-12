@@ -24,18 +24,16 @@ class SimpleBlock(nn.Module):
         if self.pre_activated:
             c1 = self.conv1(F.relu(self.bn1(x)))
             c2 = self.conv2(F.relu(self.bn2(c1)))
-
-            if not self.training:
-                c2 = self.prob * c2
-
-            return x + c2
         else:
             c1 = F.relu(self.bn1(self.conv1(x)))
             c2 = self.bn2(self.conv2(c1))
 
-            if not self.training:
-                c2 = self.prob * c2
+        if not self.training:
+            c2 = self.prob * c2
 
+        if self.pre_activated:
+            return x + c2
+        else:
             return F.relu(x + c2)
 
 
@@ -64,26 +62,22 @@ class DownBlock(nn.Module):
         if self.pre_activated:
             if self.training and random.random() > self.prob:
                 return self.bn_down(self.conv_down(x))
-
             c1 = self.conv1(F.relu(self.bn1(x)))
             c2 = self.conv2(F.relu(self.bn2(c1)))
             down = self.bn_down(self.conv_down(x))
-
-            if not self.training:
-                c2 = self.prob * c2
-
-            return down + c2
         else:
             if self.training and random.random() > self.prob:
                 return F.relu(self.bn_down(self.conv_down(x)))
-
             c1 = F.relu(self.bn1(self.conv1(x)))
             c2 = self.bn2(self.conv2(c1))
             down = self.bn_down(self.conv_down(x))
 
-            if not self.training:
-                c2 = self.prob * c2
+        if not self.training:
+            c2 = self.prob * c2
 
+        if self.pre_activated:
+            return down + c2
+        else:
             return F.relu(down + c2)
 
 
