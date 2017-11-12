@@ -7,7 +7,7 @@ from fasttrain.data import load_cifar10, SublistDataset
 from fasttrain.model import ResNetCIFAR
 
 
-def train_stacked(n, batch_size=128, base_epoch=40, stochastic_depth=None, pre_activated=True):
+def train_stacked(n, batch_size=128, base_epoch=40, stochastic_depth=None, pre_activated=True, show_test=False):
     net = ResNetCIFAR(n, pre_activated=pre_activated, stochastic_depth=stochastic_depth)
 
     print('N = {}'.format(n))
@@ -41,9 +41,14 @@ def train_stacked(n, batch_size=128, base_epoch=40, stochastic_depth=None, pre_a
     runner.run(optim_factory(0.01 * lr_scaling), epochs=base_epoch*2)
     runner.run(optim_factory(0.001 * lr_scaling), epochs=base_epoch)
 
-    train_acc = runner.evaluate(all_test)
-    print('Test accuracy: {}'.format(train_acc))
-    test_acc = runner.evaluate(train)
-    print('Train accuracy: {}'.format(test_acc))
+    dev_acc = runner.evaluate(dev)
+    print('Dev accuracy: {}'.format(dev_acc))
+
+    train_acc = runner.evaluate(train)
+    print('Train accuracy: {}'.format(train_acc))
+
+    if show_test:
+        test_acc = runner.evaluate(test)
+        print('Test accuracy: {}'.format(test_acc))
 
     print('It took {} s to train'.format(datetime.now() - start_time))
