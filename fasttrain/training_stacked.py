@@ -7,11 +7,12 @@ from fasttrain.data import load_cifar10, SublistDataset
 from fasttrain.model import ResNetCIFAR
 
 
-def train_stacked(n, batch_size=128, base_epoch=40, stochastic_depth=None, pre_activated=True, show_test=False):
+def train_stacked(n, batch_size=128, base_epoch=40, base_lr=0.1, stochastic_depth=None, pre_activated=True, show_test=False):
     net = ResNetCIFAR(n, pre_activated=pre_activated, stochastic_depth=stochastic_depth)
 
     print('N = {}'.format(n))
     print('Batch size = {}'.format(batch_size))
+    print('Base LR = {}'.format(base_lr))
     print('Stochastic depth = {}'.format(stochastic_depth))
 
     start_time = datetime.now()
@@ -37,9 +38,9 @@ def train_stacked(n, batch_size=128, base_epoch=40, stochastic_depth=None, pre_a
     for i in range(1, int(lr_scaling + 1), warmup_step):
         runner.run(optim_factory(i * 0.1), epochs=1)
 
-    runner.run(optim_factory(0.1 * lr_scaling), epochs=base_epoch*2)
-    runner.run(optim_factory(0.01 * lr_scaling), epochs=base_epoch*2)
-    runner.run(optim_factory(0.001 * lr_scaling), epochs=base_epoch)
+    runner.run(optim_factory(base_lr * lr_scaling), epochs=base_epoch*2)
+    runner.run(optim_factory(base_lr / 10 * lr_scaling), epochs=base_epoch*2)
+    runner.run(optim_factory(base_lr / 100 * lr_scaling), epochs=base_epoch)
 
     dev_acc = runner.evaluate(dev)
     print('Dev accuracy: {}'.format(dev_acc))
