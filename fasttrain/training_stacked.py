@@ -53,3 +53,4 @@ def train_stacked(n, batch_size=128, base_epoch=40, base_lr=0.1, stochastic_dept
         print('Test accuracy: {}'.format(test_acc))
 
     print('It took {} s to train'.format(datetime.now() - start_time))
+    return {'dev_accuracy': dev_acc, 'train_accuracy': train_acc}
