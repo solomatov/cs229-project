@@ -100,28 +100,29 @@ class ResNetCIFAR(nn.Module):
         total_layers = 3 * n
         layers = 0
 
-        def layer_prob():
-            return to_prob + (from_prob - to_prob) * (total_layers - layers) / total_layers
+        def layer_config():
+            prob = to_prob + (from_prob - to_prob) * (total_layers - layers) / total_layers
+            return dict(prob=prob, pre_activated=self.pre_activated)
 
         self.seq32_32 = nn.Sequential()
         for i in range(n):
-            self.seq32_32.add_module(str(i), SimpleBlock(16, pre_activated=self.pre_activated, prob=layer_prob()))
+            self.seq32_32.add_module(str(i), SimpleBlock(16, **layer_config()))
             layers += 1
 
         self.seq16_16 = nn.Sequential()
         for i in range(n):
             if i == 0:
-                self.seq16_16.add_module(str(i), DownBlock(16, pre_activated=self.pre_activated, prob=layer_prob()))
+                self.seq16_16.add_module(str(i), DownBlock(16, **layer_config()))
             else:
-                self.seq16_16.add_module(str(i), SimpleBlock(32, pre_activated=self.pre_activated, prob=layer_prob()))
+                self.seq16_16.add_module(str(i), SimpleBlock(32, **layer_config()))
             layers += 1
 
         self.seq8_8 = nn.Sequential()
         for i in range(n):
             if i == 0:
-                self.seq8_8.add_module(str(i), DownBlock(32, pre_activated=self.pre_activated, prob=layer_prob()))
+                self.seq8_8.add_module(str(i), DownBlock(32, **layer_config()))
             else:
-                self.seq8_8.add_module(str(i), SimpleBlock(64, pre_activated=self.pre_activated, prob=layer_prob()))
+                self.seq8_8.add_module(str(i), SimpleBlock(64, **layer_config()))
             layers += 1
 
         self.fc = nn.Linear(64, 10)
