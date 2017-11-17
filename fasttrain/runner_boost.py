@@ -27,7 +27,10 @@ class BoostRunner:
         self.__weights = torch.DoubleTensor(np.ones(self.__n_examples))
         self.__cost_matrix = torch.ones(self.__n_examples, self.__num_classes)
         self.__state_matrix = torch.ones(self.__n_examples, self.__num_classes)
-        self.__alpha = 1
+        self.__alpha = 0
+        self.__gamma = 1
+        self.__gamma_nominator = 0
+        self.__gamma_denominator = 0
         self.__init_cost(train.train_labels)
 
     def run(self, opt_factory, epochs=1):
@@ -59,9 +62,12 @@ class BoostRunner:
 
                 y_ = net(X_var)
 
-                loss = self.__loss_fun(y_.float(), y_var.long())
+                #loss = self.__loss_fun(y_.float(), y_var.long())
+                loss = self.exp_loss(y_.float(), y_var.long())
                 loss.backward()
                 opt.step()
+
+                self.update_gamma(y_.float(), idx, y_var.long())
 
                 _, y_ = torch.max(y_, dim=1)
                 self.__weights.index_add_(0, idx, self.__neq(y_var, y_))
@@ -70,6 +76,26 @@ class BoostRunner:
 
                 t.set_postfix_str('{:.1f}% loss={:.4f}'.format(100.0 * self.__accuracy(y_var, y_), loss.data[0]))
             t.close()
+
+    def exp_loss(self, output, target):
+        exp_cost = torch.exp(output)
+        exp_target = torch.gather(exp_cost, 1, target.view(-1,1))
+        cost = torch.div(torch.sum(exp_cost, 1), exp_target.view(-1,1)) - 1
+        return cost.mean()
+
+    def update_gamma(self, output, index, target):
+        index = torch.LongTensor(index)
+        target_index = target.data
+        cost_matrix = torch.index_select(self.__cost_matrix, 0, index)
+        cost_matrix = self.__convert(cost_matrix)
+        self.__gamma_nominator += -torch.mul(cost_matrix, output.data).sum()
+        self.__gamma_denominator += cost_matrix.index_fill_(0, target_index, 0).sum()
+
+    def update_alpha(self):
+        if np.abs(self.__gamma_denominator) > 0:
+            self.__gamma = self.__gamma_nominator/self.__gamma_denominator
+        if self.__gamma != 1:
+            self.__alpha = 0.5*np.log((1 + self.__gamma)/(1 - self.__gamma))
 
     def evaluate(self, data):
         loader = DataLoader(data, batch_size=128, num_workers=2)
