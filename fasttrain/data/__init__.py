@@ -25,3 +25,24 @@ def load_cifar10(train=True, data_path='./data'):
     transformers.append(transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)))
     return CIFAR10(data_path, train=train, download=True, transform=transforms.Compose(transformers))
 
+
+class CIFAR10_boost(CIFAR10):
+    def __init__(self, root, train=True,
+                 transform=None, target_transform=None,
+                 download=False):
+        super(CIFAR10_boost, self).__init__(root, train,
+                 transform, target_transform,
+                 download)
+
+    def __getitem__(self, index):
+        img, target = super(CIFAR10_boost, self).__getitem__(index)
+        return img, target, index
+
+
+def load_cifar10_boost(train=True, data_path='./data'):
+    transformers = []
+    if train:
+        transformers.extend([transforms.RandomHorizontalFlip(), transforms.RandomCrop(size=(32, 32), padding=4)])
+    transformers.append(transforms.ToTensor())
+    transformers.append(transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)))
+    return CIFAR10_boost(data_path, train=train, download=True, transform=transforms.Compose(transformers))
