@@ -36,7 +36,7 @@ def train_stacked(n, batch_size=128, base_epoch=40, base_lr=0.1, stochastic_dept
 
     warmup_step = 2
     for i in range(1, int(lr_scaling + 1), warmup_step):
-        runner.run(optim_factory(i * 0.1), epochs=1)
+        runner.run(optim_factory(i * base_lr), epochs=1)
 
     runner.run(optim_factory(base_lr * lr_scaling), epochs=base_epoch*2)
     runner.run(optim_factory(base_lr / 10 * lr_scaling), epochs=base_epoch*2)
