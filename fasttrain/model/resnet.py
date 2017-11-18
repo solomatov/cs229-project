@@ -89,6 +89,9 @@ class ResNetCIFAR(nn.Module):
 
         self.conv1 = nn.Conv2d(3, 16, (3, 3), stride=1, padding=1)
         self.bn1 = nn.BatchNorm2d(16)
+        if self.pre_activated:
+            self.bn_first = nn.BatchNorm2d(16)
+            self.bn_last = nn.BatchNorm2d(64)
 
         if stochastic_depth:
             from_prob = stochastic_depth['from'] or 1.0
@@ -129,9 +132,15 @@ class ResNetCIFAR(nn.Module):
     def forward(self, x):
         x = F.relu(self.bn1(self.conv1(x)))
 
+        if self.pre_activated:
+            x = F.relu(self.bn_first(x))
+
         s32_32 = self.seq32_32(x)
         s16_16 = self.seq16_16(s32_32)
         s8_8 = self.seq8_8(s16_16)
+
+        if self.pre_activated:
+            s8_8 = F.relu(self.bn_last(s8_8))
 
         features = F.avg_pool2d(s8_8, (8, 8))
         flat = features.view(features.size()[0], -1)
