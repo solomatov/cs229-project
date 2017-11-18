@@ -1,8 +1,5 @@
-import torch
-import torch.nn as nn
-import torch.nn.parallel as parallel
-import torch.optim as optim
 from torch.autograd import Variable
+from tqdm import tqdm
 
 
 class TrainSchedule:
@@ -12,17 +9,25 @@ class TrainSchedule:
     def add_step(self, *, factory, name, duration):
         self.__steps.append({'factory': factory, 'name': name, 'duration': duration})
 
+    def total_duration(self):
+        result = 0
+        for step in self.__steps:
+            result += step['duration']
+        return result
+
     def train(self, model, loss, *, train, dev):
+        progress = tqdm(total=self.total_duration() * len(train))
+
         for step in self.__steps:
             name, factory, duration = step['name'], step['factory'], step['duration']
             opt = factory(model.parameters())
-            print(f'step {name}')
+
+            progress.set_postfix(step=name)
 
             for e in range(duration):
-                print(f'epoch {e}')
+                progress.set_postfix(step=name, epoch=f"{e}/{duration}")
                 model.train()
                 for i, data in enumerate(train, 0):
-                    print(f'batch {i}')
                     X, y = Variable(data[0]), Variable(data[1])
                     opt.zero_grad()
 
@@ -31,3 +36,5 @@ class TrainSchedule:
                     loss_value = loss(y_.float(), y.long())
                     loss_value.backward()
                     opt.step()
+
+                    progress.update(1)
