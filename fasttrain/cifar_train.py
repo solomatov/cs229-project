@@ -79,10 +79,10 @@ def train_on_cifar(model, schedule, batch_size=128, name=None, show_test=False):
     dev_accuracy = get_accuracy_on(dev)
     print_acc('Dev', dev_accuracy)
     train_accuracy = get_accuracy_on(train)
-    print_acc('Train', train)
+    print_acc('Train', train_accuracy)
     if show_test:
         test_accuracy = get_accuracy_on(test)
-        print_acc('Test', test)
+        print_acc('Test', test_accuracy)
     else:
         test_accuracy = -1.0
 
@@ -92,4 +92,5 @@ def train_on_cifar(model, schedule, batch_size=128, name=None, show_test=False):
     with open('experiments.txt', mode='a+') as f:
         parameters = f'batch_size={batch_size}'
         experiment_data = f'{datetime.now}: {name}[{parameters}]. ' \
-                          f'Time={total_time}. Train={train_accuracy:.3f}. Dev={dev_accuracy:.3f}. Test={test_accuracy:.3f}'
+                          f'Time={total_time}. Train={train_accuracy:.3f}. Dev={dev_accuracy:.3f}. Test={test_accuracy:.3f}\n'
+        f.write(experiment_data)
