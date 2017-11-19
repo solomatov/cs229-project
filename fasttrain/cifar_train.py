@@ -37,6 +37,9 @@ def train_on_cifar(model, schedule, batch_size=128, name=None, show_test=False):
     )
 
     epoch_counter = 0
+
+    # workaround for https://github.com/tqdm/tqdm/issues/481
+    tqdm.monitor_interval = 0
     progress = tqdm(total=schedule.total_duration() * len(train_loader), ncols=120)
     vis = visdom.Visdom()
     visdom_win = None
