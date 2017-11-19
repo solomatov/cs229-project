@@ -2,11 +2,9 @@ import torch
 import torch.optim as optim
 import torch.nn as nn
 from torch.utils.data import DataLoader
-from torch.autograd import Variable
 
 from fasttrain.model import ResNetCIFAR
-from fasttrain.framework.train_schedule import TrainSchedule
-from fasttrain.framework.metrics import accuracy, union, loss
+from fasttrain.framework import TrainSchedule, accuracy, union, loss
 from fasttrain.data import load_cifar10, SublistDataset
 
 schedule = TrainSchedule()

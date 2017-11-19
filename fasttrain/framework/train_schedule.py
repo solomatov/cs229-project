@@ -21,18 +21,18 @@ class TrainSchedule:
     def train(self, model, loss, *, train, dev, metrics):
         progress = tqdm(total=self.total_duration() * len(train))
 
-        for step in self.__steps:
+        for i, step in enumerate(self.__steps, 0):
             name, factory, duration = step['name'], step['factory'], step['duration']
             opt = factory(model.parameters())
 
             for e in range(duration):
                 postfix = collections.OrderedDict()
-                postfix['step'] = name
+                postfix['step'] = f"{name} : {i}/{len(self.__steps)}"
                 postfix['epoch'] = f"{e}/{duration}"
                 model.train(False)
                 postfix.update(metrics())
                 model.train(True)
-                progress.set_postfix(**postfix)
+                progress.set_postfix(ordered_dict=postfix)
 
                 for i, data in enumerate(train, 0):
                     X, y = Variable(data[0]), Variable(data[1])
