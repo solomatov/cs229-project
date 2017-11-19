@@ -10,7 +10,6 @@ def resnet_paper_schedule(batch_size=128):
     momentum = 0.9
 
     def new_optim(p, lr):
-        print(lr)
         return optim.SGD(p, lr=lr, weight_decay=wd, momentum=momentum)
 
     def optim_factory(lr):
