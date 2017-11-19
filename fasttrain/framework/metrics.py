@@ -5,13 +5,31 @@ from torch.autograd import Variable
 from torch.utils.data import DataLoader
 
 
-def accuracy_metric(model, dataset, key=None):
-    def metric(y, y_):
-        _, y_ = torch.max(y_, dim=1)
-        result = torch.mean(torch.eq(y_, y).type(torch.FloatTensor)).data[0]
-        return {key or 'accuracy': result}
+def accuracy_metric(model, dataset, batch=128, key=None):
+    def metric():
+        nonlocal batch
+        loader = DataLoader(dataset, batch_size=batch)
 
-    return prediction_metric(model, dataset, metric)
+        total_samples = 0
+        total_correct = 0
+
+        for batch in loader:
+            X, y = Variable(batch[0]), Variable(batch[1])
+
+            if torch.cuda.is_available():
+                X = X.cuda()
+                y = y.cuda()
+
+            y_ = model(X)
+            _, y_ = torch.max(y_, dim=1)
+
+            total_samples += len(y)
+            sum = torch.sum(torch.eq(y_, y).type(torch.FloatTensor))
+            total_correct += sum.data[0]
+
+        return {'accuracy': total_correct / total_samples}
+
+    return metric
 
 
 def loss_metric(model, dataset, loss, key=None):

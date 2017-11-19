@@ -73,8 +73,8 @@ def train_on_cifar(model, schedule, batch_size=128, name=None, show_test=False):
     def print_acc_on(name, dataset):
         print(f"{name} accuracy: {accuracy_metric(model, dataset)()['accuracy']:.3f}")
 
-    print('')
     print_acc_on('Dev', dev)
+    print_acc_on('Train', train)
     if show_test:
         print_acc_on('Test', test)
 
