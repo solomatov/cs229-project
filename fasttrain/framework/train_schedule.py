@@ -1,6 +1,5 @@
 import torch
 from torch.autograd import Variable
-from tqdm import tqdm
 
 import collections
 
@@ -18,21 +17,14 @@ class TrainSchedule:
             result += step['duration']
         return result
 
-    def train(self, model, loss, *, train, dev, metrics):
-        progress = tqdm(total=self.total_duration() * len(train))
-
+    def train(self, model, loss, *, train, dev, on_epoch_start=None, on_step=None):
         for i, step in enumerate(self.__steps, 0):
             name, factory, duration = step['name'], step['factory'], step['duration']
             opt = factory(model.parameters())
 
             for e in range(duration):
-                postfix = collections.OrderedDict()
-                postfix['step'] = f"{name} : {i}/{len(self.__steps)}"
-                postfix['epoch'] = f"{e}/{duration}"
-                model.train(False)
-                postfix.update(metrics())
-                model.train(True)
-                progress.set_postfix(ordered_dict=postfix)
+                if on_epoch_start:
+                    on_epoch_start(step, e)
 
                 for i, data in enumerate(train, 0):
                     X, y = Variable(data[0]), Variable(data[1])
@@ -50,4 +42,5 @@ class TrainSchedule:
 
                     opt.step()
 
-                    progress.update(1)
+                    if on_step:
+                        on_step()
