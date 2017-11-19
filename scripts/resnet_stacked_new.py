@@ -35,8 +35,6 @@ show_test = args.show_test
 
 schedule = resnet_paper_schedule(batch_size=batch_size)
 net = ResNetCIFAR(n, pre_activated=pre_activated, stochastic_depth=stochastic_depth)
-if batch_size >= 1024:
-    net = parallel.DataParallel(net)
 
 name=f'ResNet({n}, lr={base_lr}, pa={pre_activated}, sd={args.stochastic_depth})'
 
