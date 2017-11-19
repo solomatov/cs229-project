@@ -24,7 +24,6 @@ if args.stochastic_depth:
             'to': float(splitted[1])
         }
 
-
 train_stacked(args.number,
               batch_size=args.batch_size,
               stochastic_depth=stochastic_depth,

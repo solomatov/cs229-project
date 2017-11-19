@@ -22,7 +22,7 @@ def resnet_paper_schedule(batch_size=128):
     scale_factor = batch_size / 128
 
     warmup_step = 2
-    for i in range(1, int(scale_factor + 1), warmup_step):
+    for i in range(1, int(scale_factor - 1), warmup_step):
         schedule.add_step(factory=optim_factory(base_lr * i), name=f'Warmup {i / scale_factor:.2f}', duration=1)
 
     lr = base_lr * scale_factor
