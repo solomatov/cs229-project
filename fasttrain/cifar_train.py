@@ -10,7 +10,7 @@ from fasttrain.data import load_cifar10, SublistDataset
 from fasttrain.framework import accuracy_metric, union_metric, loss_metric
 
 
-def train_on_cifar(model, schedule, batch_size=128):
+def train_on_cifar(model, schedule, batch_size=128, name=None):
     train = load_cifar10(train=True)
     all_test = load_cifar10(train=False)
 
@@ -47,13 +47,13 @@ def train_on_cifar(model, schedule, batch_size=128):
         postfix.update(epoch_metrics)
         progress.set_postfix(ordered_dict=postfix)
 
-        epoch_counter += 1
         acc = epoch_metrics['accuracy']
 
         if not visdom_win:
-            visdom_win = vis.line(np.array([acc]), np.array([0]), opts=dict(title='Accuracy'))
+            visdom_win = vis.line(np.array([acc]), np.array([0]), opts=dict(title=name or 'Accuracy'))
         else:
             vis.line(np.array([acc]), np.array([epoch_counter]), win=visdom_win, update='append')
+        epoch_counter += 1
 
     def on_step():
         progress.update(1)
