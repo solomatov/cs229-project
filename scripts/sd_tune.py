@@ -6,6 +6,6 @@ from fasttrain.schedules import resnet_paper_schedule
 
 schedule = resnet_paper_schedule()
 
-for n in np.linspace(0.1, 1.0, 10):
-    model = ResNetCIFAR(n=20, stochastic_depth={'from'})
-    train_on_cifar(model, schedule, name=f'ResNet({n})', batch_size=3072)
+for prob in np.linspace(0.1, 1.0, 10):
+    model = ResNetCIFAR(n=20, stochastic_depth={'from': prob, 'to': prob})
+    train_on_cifar(model, schedule, name=f'ResNet(sd-p={prob})', batch_size=3072)
