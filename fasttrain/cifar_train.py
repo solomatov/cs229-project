@@ -91,6 +91,6 @@ def train_on_cifar(model, schedule, batch_size=128, name=None, show_test=False):
 
     with open('experiments.txt', mode='a+') as f:
         parameters = f'batch_size={batch_size}'
-        experiment_data = f'{datetime.now}: {name}[{parameters}]. ' \
+        experiment_data = f'{datetime.now()}: {name}[{parameters}]. ' \
                           f'Time={total_time}. Train={train_accuracy:.3f}. Dev={dev_accuracy:.3f}. Test={test_accuracy:.3f}\n'
         f.write(experiment_data)

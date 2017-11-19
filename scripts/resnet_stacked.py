@@ -1,6 +1,9 @@
 import argparse
 
-from fasttrain.training_stacked import train_stacked
+from fasttrain.cifar_train import train_on_cifar
+from fasttrain.model.resnet import ResNetCIFAR
+from fasttrain.schedules import resnet_paper_schedule
+import torch.nn.parallel as parallel
 
 parser = argparse.ArgumentParser(description='Train ResNet on CIFAR10')
 parser.add_argument('-n', '--number', type=int, default=20)
@@ -24,9 +27,18 @@ if args.stochastic_depth:
             'to': float(splitted[1])
         }
 
-train_stacked(args.number,
-              batch_size=args.batch_size,
-              stochastic_depth=stochastic_depth,
-              show_test=args.show_test,
-              pre_activated=args.pre_activated,
-              base_lr=args.learn_rate)
+batch_size = args.batch_size
+n = args.number
+pre_activated = args.pre_activated
+base_lr=args.learn_rate
+show_test = args.show_test
+
+schedule = resnet_paper_schedule(batch_size=batch_size)
+net = ResNetCIFAR(n, pre_activated=pre_activated, stochastic_depth=stochastic_depth)
+if batch_size >= 1024:
+    net = parallel.DataParallel(net)
+
+name=f'ResNet({n}, lr={base_lr}, pa={pre_activated}, sd={args.stochastic_depth})'
+
+
+train_on_cifar(net, schedule, batch_size=batch_size, name=name, show_test=show_test)
