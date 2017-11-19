@@ -5,19 +5,19 @@ from torch.autograd import Variable
 from torch.utils.data import DataLoader
 
 
-def accuracy_metric(model, dataset):
+def accuracy_metric(model, dataset, key=None):
     def metric(y, y_):
         _, y_ = torch.max(y_, dim=1)
         result = torch.mean(torch.eq(y_, y).type(torch.FloatTensor)).data[0]
-        return {'accuracy': result}
+        return {key or 'accuracy': result}
 
     return prediction_metric(model, dataset, metric)
 
 
-def loss_metric(model, dataset, loss):
+def loss_metric(model, dataset, loss, key=None):
     def metric(y, y_):
         loss_value = loss(y_.float(), y.long())
-        return {'loss': loss_value.data[0]}
+        return {key or 'loss': loss_value.data[0]}
 
     return prediction_metric(model, dataset, metric)
 

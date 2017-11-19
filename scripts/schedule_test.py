@@ -14,4 +14,4 @@ schedule.add_step(factory=lambda p: optim.SGD(p, lr=0.0001, weight_decay=wd, mom
 
 model = ResNetCIFAR(n=2)
 
-train_on_cifar(model, schedule)
+train_on_cifar(model, schedule, name='ResNet(2)')

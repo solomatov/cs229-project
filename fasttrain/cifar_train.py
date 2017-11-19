@@ -1,4 +1,6 @@
 import collections
+from datetime import datetime
+
 import numpy as np
 import torch
 import torch.nn as nn
@@ -11,6 +13,8 @@ from fasttrain.framework import accuracy_metric, union_metric, loss_metric
 
 
 def train_on_cifar(model, schedule, batch_size=128, name=None):
+    start_time = datetime.now()
+
     train = load_cifar10(train=True)
     all_test = load_cifar10(train=False)
 
@@ -59,3 +63,12 @@ def train_on_cifar(model, schedule, batch_size=128, name=None):
         progress.update(1)
 
     schedule.train(model, loss, train=train_loader, dev=dev, on_step=on_step, on_epoch_start=on_epoch_start)
+
+    final_metrics = union_metric(
+        accuracy_metric(model, dev, 'dev_accuracy'),
+        accuracy_metric(model, test, 'test_accuracy')
+    )
+
+    print(final_metrics())
+
+    print(f"It took {datetime.now() - start_time} to train")
