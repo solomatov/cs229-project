@@ -1,3 +1,4 @@
+import torch
 from torch.autograd import Variable
 from tqdm import tqdm
 
@@ -35,6 +36,11 @@ class TrainSchedule:
 
                 for i, data in enumerate(train, 0):
                     X, y = Variable(data[0]), Variable(data[1])
+
+                    if torch.cuda.is_available():
+                        X = X.cuda()
+                        y = y.cuda()
+
                     opt.zero_grad()
 
                     y_ = model(X)
