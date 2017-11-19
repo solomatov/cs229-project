@@ -4,6 +4,7 @@ from datetime import datetime
 import numpy as np
 import torch
 import torch.nn as nn
+import torch.nn.parallel as parallel
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 import visdom
@@ -28,6 +29,8 @@ def train_on_cifar(model, schedule, batch_size=128, name=None, show_test=False):
 
     if torch.cuda.is_available():
         model = model.cuda()
+        if batch_size >= 1024:
+            model = parallel.DataParallel(model)
 
     train_loader = DataLoader(train, batch_size=batch_size, num_workers=2)
 
