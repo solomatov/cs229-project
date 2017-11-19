@@ -27,6 +27,8 @@ dev_small = SublistDataset(all_test, 0, 200)
 
 model = ResNetCIFAR(n=2)
 
+if torch.cuda.is_available():
+    model = model.cuda()
 
 train_loader = DataLoader(train, batch_size=128, num_workers=2)
 

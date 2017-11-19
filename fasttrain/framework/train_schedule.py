@@ -28,14 +28,12 @@ class TrainSchedule:
                 postfix = collections.OrderedDict()
                 postfix['step'] = name
                 postfix['epoch'] = f"{e}/{duration}"
+                model.train(False)
                 postfix.update(metrics())
+                model.train(True)
                 progress.set_postfix(**postfix)
 
                 for i, data in enumerate(train, 0):
-                    model.train(False)
-
-                    model.train(True)
-
                     X, y = Variable(data[0]), Variable(data[1])
                     opt.zero_grad()
 

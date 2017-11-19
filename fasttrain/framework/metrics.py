@@ -27,6 +27,11 @@ def prediction_metric(model, dataset, pred_metric):
         loader = DataLoader(dataset, batch_size=len(dataset))
         for batch in loader:
             X, y = Variable(batch[0]), Variable(batch[1])
+
+            if torch.cuda.is_available():
+                X = X.cuda()
+                y = y.cuda()
+
             y_ = model(X)
             return pred_metric(y, y_)
 
