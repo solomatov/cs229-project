@@ -5,7 +5,7 @@ from torch.autograd import Variable
 from torch.utils.data import DataLoader
 
 
-def accuracy(model, dataset):
+def accuracy_metric(model, dataset):
     def metric(y, y_):
         _, y_ = torch.max(y_, dim=1)
         result = torch.mean(torch.eq(y_, y).type(torch.FloatTensor)).data[0]
@@ -14,7 +14,7 @@ def accuracy(model, dataset):
     return prediction_metric(model, dataset, metric)
 
 
-def loss(model, dataset, loss):
+def loss_metric(model, dataset, loss):
     def metric(y, y_):
         loss_value = loss(y_.float(), y.long())
         return {'loss': loss_value.data[0]}
@@ -38,7 +38,7 @@ def prediction_metric(model, dataset, pred_metric):
     return metric
 
 
-def union(*args):
+def union_metric(*args):
     def metric():
         result = collections.OrderedDict()
         for arg in args:
