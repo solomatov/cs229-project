@@ -5,7 +5,7 @@ from fasttrain.model import ResNetCIFAR
 from fasttrain.schedules import resnet_paper_schedule
 
 
-batch_size = 3072
+batch_size = 256
 schedule = resnet_paper_schedule(batch_size=batch_size)
 
 for prob in np.linspace(0.1, 1.0, 10):
