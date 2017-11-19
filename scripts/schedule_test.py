@@ -4,7 +4,6 @@ from fasttrain.schedules import resnet_paper_schedule
 
 schedule = resnet_paper_schedule()
 
-
 for n in range(2, 80):
     model = ResNetCIFAR(n=n)
     train_on_cifar(model, schedule, name=f'ResNet({n})', batch_size=128)
