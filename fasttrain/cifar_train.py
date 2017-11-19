@@ -68,6 +68,7 @@ def train_on_cifar(model, schedule, batch_size=128, name=None, show_test=False):
         progress.update(1)
 
     schedule.train(model, loss, train=train_loader, dev=dev, on_step=on_step, on_epoch_start=on_epoch_start)
+    progress.close()
 
     def print_acc_on(name, dataset):
         print(f"{name} accuracy: {accuracy_metric(model, dataset)()['accuracy']:.3f}")
