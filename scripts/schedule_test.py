@@ -6,6 +6,7 @@ from torch.autograd import Variable
 
 from fasttrain.model import ResNetCIFAR
 from fasttrain.framework.train_schedule import TrainSchedule
+from fasttrain.framework.metrics import accuracy, union, loss
 from fasttrain.data import load_cifar10, SublistDataset
 
 schedule = TrainSchedule()
@@ -35,11 +36,13 @@ def evaluator():
         y_ = model(X)
         _, y_ = torch.max(y_, dim=1)
         result = torch.mean(torch.eq(y_, y).type(torch.FloatTensor)).data[0]
-        return result
-
+        return {'accuracy': result}
 
 train_loader = DataLoader(train, batch_size=128, num_workers=2)
 
-schedule.train(model, nn.CrossEntropyLoss(), train=train_loader, dev=dev, evaluator=evaluator)
+schedule.train(model, nn.CrossEntropyLoss(), train=train_loader, dev=dev, metrics=union(
+    accuracy(model, dev_small),
+    loss(model, dev_small, nn.CrossEntropyLoss())
+))
 
 
