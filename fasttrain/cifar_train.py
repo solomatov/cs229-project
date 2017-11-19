@@ -48,8 +48,8 @@ def train_on_cifar(model, schedule, batch_size=128, name=None, show_test=False):
         nonlocal epoch_counter, visdom_win, metrics
 
         postfix = collections.OrderedDict()
-        postfix['step'] = f"{step['name']}"
-        postfix['epoch'] = f"{epoch}/{step['duration']}"
+        postfix['step'] = f'{step["name"]}'
+        postfix['epoch'] = f'{epoch}/{step["duration"]}'
         model.train(False)
 
         epoch_metrics = metrics()
@@ -70,12 +70,26 @@ def train_on_cifar(model, schedule, batch_size=128, name=None, show_test=False):
     schedule.train(model, loss, train=train_loader, dev=dev, on_step=on_step, on_epoch_start=on_epoch_start)
     progress.close()
 
-    def print_acc_on(name, dataset):
-        print(f"{name} accuracy: {accuracy_metric(model, dataset)()['accuracy']:.3f}")
+    def get_accuracy_on(dataset):
+        return accuracy_metric(model, dataset)()['accuracy']
 
-    print_acc_on('Dev', dev)
-    print_acc_on('Train', train)
+    def print_acc(name, accuracy):
+        print(f'{name} accuracy: {accuracy:.3f}')
+
+    dev_accuracy = get_accuracy_on(dev)
+    print_acc('Dev', dev_accuracy)
+    train_accuracy = get_accuracy_on(train)
+    print_acc('Train', train)
     if show_test:
-        print_acc_on('Test', test)
+        test_accuracy = get_accuracy_on(test)
+        print_acc('Test', test)
+    else:
+        test_accuracy = -1.0
 
-    print(f"It took {datetime.now() - start_time} to train")
+    total_time = datetime.now() - start_time
+    print(f'It took {total_time} to train')
+
+    with open('experiments.txt', mode='a+') as f:
+        parameters = f'batch_size={batch_size}'
+        experiment_data = f'{datetime.now}: {name}[{parameters}]. ' \
+                          f'Time={total_time}. Train={train_accuracy:.3f}. Dev={dev_accuracy:.3f}. Test={test_accuracy:.3f}'
