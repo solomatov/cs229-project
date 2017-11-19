@@ -12,7 +12,7 @@ from fasttrain.data import load_cifar10, SublistDataset
 from fasttrain.framework import accuracy_metric, union_metric, loss_metric
 
 
-def train_on_cifar(model, schedule, batch_size=128, name=None):
+def train_on_cifar(model, schedule, batch_size=128, name=None, show_test=False):
     start_time = datetime.now()
 
     train = load_cifar10(train=True)
@@ -64,11 +64,12 @@ def train_on_cifar(model, schedule, batch_size=128, name=None):
 
     schedule.train(model, loss, train=train_loader, dev=dev, on_step=on_step, on_epoch_start=on_epoch_start)
 
-    final_metrics = union_metric(
-        accuracy_metric(model, dev, 'dev_accuracy'),
-        accuracy_metric(model, test, 'test_accuracy')
-    )
+    def print_acc_on(name, dataset):
+        print(f"{name} accuracy: {accuracy_metric(model, dataset)()['accuracy']:.3f}")
 
-    print(final_metrics())
+    print('')
+    print_acc_on('Dev', dev)
+    if show_test:
+        print_acc_on('Test', test)
 
     print(f"It took {datetime.now() - start_time} to train")
