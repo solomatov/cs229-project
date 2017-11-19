@@ -3,6 +3,7 @@ from tqdm import tqdm
 
 import collections
 
+
 class TrainSchedule:
     def __init__(self):
         self.__steps = []

@@ -28,16 +28,6 @@ dev_small = SublistDataset(all_test, 0, 200)
 model = ResNetCIFAR(n=2)
 
 
-def evaluator():
-    loader = DataLoader(dev_small, batch_size=len(dev_small))
-
-    for batch in loader:
-        X, y = Variable(batch[0]), Variable(batch[1])
-        y_ = model(X)
-        _, y_ = torch.max(y_, dim=1)
-        result = torch.mean(torch.eq(y_, y).type(torch.FloatTensor)).data[0]
-        return {'accuracy': result}
-
 train_loader = DataLoader(train, batch_size=128, num_workers=2)
 
 schedule.train(model, nn.CrossEntropyLoss(), train=train_loader, dev=dev, metrics=union(
