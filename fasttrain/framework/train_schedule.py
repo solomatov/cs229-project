@@ -15,19 +15,19 @@ class TrainSchedule:
             result += step['duration']
         return result
 
-    def train(self, model, loss, *, train, dev):
+    def train(self, model, loss, *, train, dev, evaluator):
         progress = tqdm(total=self.total_duration() * len(train))
 
         for step in self.__steps:
             name, factory, duration = step['name'], step['factory'], step['duration']
             opt = factory(model.parameters())
 
-            progress.set_postfix(step=name)
-
             for e in range(duration):
-                progress.set_postfix(step=name, epoch=f"{e}/{duration}")
-                model.train()
                 for i, data in enumerate(train, 0):
+                    model.train(False)
+                    progress.set_postfix(step=name, epoch=f"{e}/{duration}", accuracy=evaluator())
+                    model.train(True)
+
                     X, y = Variable(data[0]), Variable(data[1])
                     opt.zero_grad()
 
@@ -35,6 +35,7 @@ class TrainSchedule:
 
                     loss_value = loss(y_.float(), y.long())
                     loss_value.backward()
+
                     opt.step()
 
                     progress.update(1)
