@@ -8,6 +8,8 @@ from torch.utils.data import DataLoader
 def accuracy_metric(model, dataset, batch=128, key=None):
     def metric():
         nonlocal batch
+        model.train(mode=False)
+
         loader = DataLoader(dataset, batch_size=batch)
 
         total_samples = 0
@@ -42,6 +44,7 @@ def loss_metric(model, dataset, loss, key=None):
 
 def prediction_metric(model, dataset, pred_metric):
     def metric():
+        model.train(mode=False)
         loader = DataLoader(dataset, batch_size=len(dataset))
         for batch in loader:
             X, y = Variable(batch[0]), Variable(batch[1])

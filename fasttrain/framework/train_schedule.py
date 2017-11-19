@@ -26,6 +26,7 @@ class TrainSchedule:
                 if on_epoch_start:
                     on_epoch_start(step, e)
 
+                model.train()
                 for i, data in enumerate(train, 0):
                     X, y = Variable(data[0]), Variable(data[1])
 
