@@ -72,6 +72,7 @@ def train_on_cifar(model, schedule, batch_size=128, name=None, show_test=False):
 
     schedule.train(model, loss, train=train_loader, dev=dev, on_step=on_step, on_epoch_start=on_epoch_start)
     progress.close()
+    total_time = datetime.now() - start_time
 
     def get_accuracy_on(dataset):
         return accuracy_metric(model, dataset)()['accuracy']
@@ -89,7 +90,6 @@ def train_on_cifar(model, schedule, batch_size=128, name=None, show_test=False):
     else:
         test_accuracy = -1.0
 
-    total_time = datetime.now() - start_time
     print(f'It took {total_time} to train')
 
     with open('experiments.txt', mode='a') as f:
