@@ -13,6 +13,7 @@ def run_experiment(batch_size):
         model = ResNetCIFAR(n=20, stochastic_depth={'from': prob, 'to': prob})
         train_on_cifar(model, schedule, name=f'ResNet(sd-p={prob})', batch_size=batch_size)
 
+
 run_experiment(3072)
 run_experiment(2048)
 run_experiment(1024)
