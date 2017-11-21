@@ -13,7 +13,7 @@ from fasttrain.data import load_cifar10, SublistDataset
 from fasttrain.framework import accuracy_metric, union_metric, loss_metric
 
 
-def train_on_cifar(model, schedule, batch_size=128, name=None, show_test=False):
+def train_on_cifar(model, schedule, batch_size=128, name=None, show_test=False, force_multi_gpu=False):
     if name:
         print(f'Training: {name}')
     start_time = datetime.now()
@@ -29,7 +29,7 @@ def train_on_cifar(model, schedule, batch_size=128, name=None, show_test=False):
 
     if torch.cuda.is_available():
         model = model.cuda()
-        if batch_size >= 1024:
+        if batch_size >= 1024 or force_multi_gpu:
             model = parallel.DataParallel(model)
 
     train_loader = DataLoader(train, batch_size=batch_size, num_workers=2)
