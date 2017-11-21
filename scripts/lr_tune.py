@@ -15,7 +15,6 @@ def run_experiment(batch_size, multi_gpu=False):
 
 run_experiment(128)
 run_experiment(256)
-run_experiment(256, multi_gpu=True)
 run_experiment(512)
 run_experiment(512, multi_gpu=True)
 run_experiment(1024)
