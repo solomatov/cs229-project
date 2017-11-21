@@ -14,9 +14,9 @@ def run_experiment(batch_size):
         train_on_cifar(model, schedule, name=f'ResNet(sd-p={prob})', batch_size=batch_size)
 
 
-run_experiment(3072)
-run_experiment(2048)
-run_experiment(1024)
+# run_experiment(3072)
+# run_experiment(2048)
+# run_experiment(1024)
 run_experiment(512)
 run_experiment(128)
 
