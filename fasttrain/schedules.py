@@ -3,7 +3,7 @@ from fasttrain.framework import TrainSchedule
 import torch.optim as optim
 
 
-def resnet_paper_schedule(batch_size=128):
+def resnet_paper_schedule(batch_size=128, base_lr=0.1):
     schedule = TrainSchedule()
 
     wd = 0.0001
@@ -18,7 +18,6 @@ def resnet_paper_schedule(batch_size=128):
 
         return factory
 
-    base_lr = 0.1
     scale_factor = batch_size / 128
 
     warmup_step = 2

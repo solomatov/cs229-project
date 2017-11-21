@@ -18,5 +18,6 @@ def run_experiment(batch_size):
 # run_experiment(2048)
 # run_experiment(1024)
 run_experiment(512)
+run_experiment(256)
 run_experiment(128)
 
