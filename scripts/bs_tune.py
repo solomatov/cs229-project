@@ -5,11 +5,11 @@ from fasttrain.model import ResNetCIFAR
 from fasttrain.schedules import resnet_paper_schedule
 
 
-def run_experiment(batch_size):
+def run_experiment(batch_size, force_multi_gpu=False):
     schedule = resnet_paper_schedule(batch_size=batch_size)
 
     model = ResNetCIFAR(n=20)
-    train_on_cifar(model, schedule, name=f'ResNet()', batch_size=batch_size)
+    train_on_cifar(model, schedule, name=f'ResNet()', batch_size=batch_size, force_multi_gpu=force_multi_gpu)
 
 
 run_experiment(3072)
