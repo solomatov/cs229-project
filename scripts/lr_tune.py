@@ -7,7 +7,7 @@ from fasttrain.schedules import resnet_paper_schedule
 
 def run_experiment(batch_size):
     schedule = resnet_paper_schedule(batch_size=batch_size)
-    for lr in [5.0, 1.0, 0.5, 0.1, 0.05, 0.01, 0.05, 0.001]:
+    for lr in np.logspace(2, -5, 50):
         sd = 0.5
         model = ResNetCIFAR(n=20, stochastic_depth={'from': sd, 'to': sd})
         train_on_cifar(model, schedule, name=f'ResNet(lr={lr:.2f}, sd={sd})', batch_size=batch_size)
