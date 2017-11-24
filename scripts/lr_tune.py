@@ -10,7 +10,7 @@ def run_experiment(batch_size):
     for lr in np.logspace(2, -5, 50):
         sd = 0.5
         model = ResNetCIFAR(n=20, stochastic_depth={'from': sd, 'to': sd})
-        train_on_cifar(model, schedule, name=f'ResNet(lr={lr:.2f}, sd={sd})', batch_size=batch_size)
+        train_on_cifar(model, schedule, name=f'ResNet(lr={lr:.2e}, sd={sd})', batch_size=batch_size)
 
 
 # run_experiment(3072)
