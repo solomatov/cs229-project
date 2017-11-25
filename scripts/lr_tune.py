@@ -6,7 +6,7 @@ from fasttrain.schedules import resnet_paper_schedule
 
 
 def run_experiment(batch_size):
-    for lr in np.logspace(1, -6, 8):
+    for lr in np.logspace(0, -4, 20):
         schedule = resnet_paper_schedule(batch_size=batch_size, base_lr=lr)
         sd = 0.5
         model = ResNetCIFAR(n=20, stochastic_depth={'from': sd, 'to': sd})
