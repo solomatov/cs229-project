@@ -32,6 +32,8 @@ class BoostRunner:
         self.__gamma_nominator = 0
         self.__gamma_denominator = 0
         self.__init_cost(train.train_labels)
+        self.__cost_matrix = self.__convert(self.__cost_matrix)
+        #self.__weights = self.__convert(self.__weights)
 
     def run(self, opt_factory, epochs=1):
         parameters = filter(lambda p: p.requires_grad, self.__net.parameters())
@@ -39,7 +41,7 @@ class BoostRunner:
 
         sampler = WeightedRandomSampler(self.__weights, len(self.__weights))
         loader = DataLoader(self.__train, batch_size=self.__batch_size, num_workers=2, sampler=sampler, shuffle=False)
-
+        #loader = DataLoader(self.__train, batch_size=self.__batch_size, num_workers=2)
         net = self.__get_train_net()
 
         for e in range(epochs):
@@ -61,41 +63,54 @@ class BoostRunner:
                 opt.zero_grad()
 
                 y_ = net(X_var)
-
-                #loss = self.__loss_fun(y_.float(), y_var.long())
-                loss = self.exp_loss(y_.float(), y_var.long())
+                output = y_.float()
+                loss = self.__loss_fun(y_.float(), y_var.long())
+                #loss = self.exp_loss(y_.float(), y_var.long())
                 loss.backward()
                 opt.step()
 
                 self.update_gamma(y_.float(), idx, y_var.long())
+                self.update_cost(y_.float(), idx, y_var.long())
 
                 _, y_ = torch.max(y_, dim=1)
-                self.__weights.index_add_(0, idx, self.__neq(y_var, y_))
 
                 t.update(1)
-
-                t.set_postfix_str('{:.1f}% loss={:.4f}'.format(100.0 * self.__accuracy(y_var, y_), loss.data[0]))
+                t.set_postfix_str('{:.1f}% loss={:.4f} std={:.2f} min={:.2f} max={:.2f} cost sum={:.4f}'.format(100.0 * self.__accuracy(y_var, y_), loss.data[0], output.std().data[0], torch.min(output.data), torch.max(output.data), self.__cost_matrix.sum()))
             t.close()
 
     def exp_loss(self, output, target):
         exp_cost = torch.exp(output)
         exp_target = torch.gather(exp_cost, 1, target.view(-1,1))
-        cost = torch.div(torch.sum(exp_cost, 1), exp_target.view(-1,1)) - 1
-        return cost.mean()
+        cost = torch.div(torch.sum(exp_cost, 1).view(-1,1), exp_target.view(-1,1)) - 1
+        return torch.log(cost.mean())
+
+    def update_cost(self, output, index, target):
+        exp_cost = torch.exp(output)
+        exp_target = torch.gather(exp_cost, 1, target.view(-1, 1))
+        cost_update = torch.div(exp_cost, exp_target.view(-1,1))
+        eq_update = torch.div(- torch.sum(exp_cost, 1).view(-1,1), exp_target.view(-1,1)) + 1
+
+        index = torch.LongTensor(index)
+        index = self.__convert(index)
+        target_index = target.data
+        cost_update.data.scatter_(1, target_index.view(-1, 1), eq_update.data)
+        self.__cost_matrix[index, :] = cost_update.data
 
     def update_gamma(self, output, index, target):
         index = torch.LongTensor(index)
+        index = self.__convert(index)
         target_index = target.data
         cost_matrix = torch.index_select(self.__cost_matrix, 0, index)
         cost_matrix = self.__convert(cost_matrix)
         self.__gamma_nominator += -torch.mul(cost_matrix, output.data).sum()
-        self.__gamma_denominator += cost_matrix.index_fill_(0, target_index, 0).sum()
+        self.__gamma_denominator += cost_matrix.scatter_(1, target_index.view(-1, 1), 0).sum()
 
     def update_alpha(self):
         if np.abs(self.__gamma_denominator) > 0:
             self.__gamma = self.__gamma_nominator/self.__gamma_denominator
         if self.__gamma != 1:
             self.__alpha = 0.5*np.log((1 + self.__gamma)/(1 - self.__gamma))
+        return self.__gamma, self.__alpha
 
     def evaluate(self, data):
         loader = DataLoader(data, batch_size=128, num_workers=2)
@@ -123,7 +138,7 @@ class BoostRunner:
 
     def __init_cost(self, target):
         index = torch.LongTensor(target)
-        self.__cost_matrix.index_fill_(1, index, 1 - self.__num_classes)
+        self.__cost_matrix.scatter_(1, index.view(-1, 1), 1 - self.__num_classes)
 
     def __convert(self, t):
         result = t
