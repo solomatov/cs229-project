@@ -11,6 +11,7 @@ parser.add_argument('-lr', '--learn_rate', type=float, default=0.1)
 parser.add_argument('-sd', '--stochastic-depth', type=str, default=None)
 parser.add_argument('-st', '--show-test', type=bool, default=False)
 parser.add_argument('-pa', '--pre-activated', type=bool, default=False)
+parser.add_argument('-hp', '--half-precision', type=bool, default=False)
 
 args = parser.parse_args()
 
@@ -35,7 +36,6 @@ show_test = args.show_test
 schedule = resnet_paper_schedule(batch_size=batch_size)
 net = ResNetCIFAR(n, pre_activated=pre_activated, stochastic_depth=stochastic_depth)
 
-name=f'ResNet({n}, lr={base_lr}, pa={pre_activated}, sd={args.stochastic_depth})'
-
+name=f'ResNet({n}, lr={base_lr}, pa={pre_activated}, sd={args.stochastic_depth}, hp={args.half_precision})'
 
 train_on_cifar(net, schedule, batch_size=batch_size, name=name, show_test=show_test)

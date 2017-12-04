@@ -17,7 +17,7 @@ class TrainSchedule:
             result += step['duration']
         return result
 
-    def train(self, model, loss, *, train, dev, on_epoch_start=None, on_step=None):
+    def train(self, model, loss, *, train, dev, on_epoch_start=None, on_step=None, half_precision=False):
         for i, step in enumerate(self.__steps, 0):
             name, factory, duration = step['name'], step['factory'], step['duration']
             opt = factory(model.parameters())
@@ -33,6 +33,9 @@ class TrainSchedule:
                     if torch.cuda.is_available():
                         X = X.cuda()
                         y = y.cuda()
+                        if half_precision:
+                            X = X.half()
+                            y = y.half()
 
                     opt.zero_grad()
 
