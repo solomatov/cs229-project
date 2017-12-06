@@ -4,11 +4,12 @@ from fasttrain.model.resnet import SimpleBlock, DownBlock
 
 
 class BoostResNetCIFAR(nn.Module):
-    def __init__(self, n, pre_activated=False, stochastic_depth=None, one_pass_train=True, affine=False):
+    def __init__(self, n, pre_activated=False, stochastic_depth=None, one_pass_train=True, affine=False, verbatim=False):
         super(BoostResNetCIFAR, self).__init__()
 
         self.pre_activated = pre_activated
         self.one_pass_train = one_pass_train
+        self.__verbatim = verbatim
 
         self.conv1 = nn.Conv2d(3, 8, (3, 3), stride=1, padding=1)
         self.bn1 = nn.BatchNorm2d(8)
@@ -156,7 +157,8 @@ class BoostResNetCIFAR(nn.Module):
 
     def set_require_grad(self, module, require_grad=False):
         if require_grad:
-            print(module)
+            if self.__verbatim:
+                print(module)
         for param in module.parameters():
             param.requires_grad = require_grad
 
