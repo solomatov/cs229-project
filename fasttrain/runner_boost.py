@@ -27,10 +27,10 @@ class BoostRunner:
         self.__weights = torch.DoubleTensor(np.ones(self.__n_examples))
         self.__cost_matrix = Variable(torch.ones(self.__n_examples, self.__num_classes))
         self.__state_matrix = torch.ones(self.__n_examples, self.__num_classes)
-        self.__alpha = 0
-        self.__gamma = 1
-        self.__gamma_nominator = 0
-        self.__gamma_denominator = 0
+        self.__alpha = 0.
+        self.__gamma = 1.
+        self.__gamma_nominator = 0.
+        self.__gamma_denominator = 0.
         self.__init_cost(train.train_labels)
         self.__cost_matrix = self.__convert(self.__cost_matrix)
         #self.__weights = self.__convert(self.__weights)
@@ -64,13 +64,15 @@ class BoostRunner:
 
                 y_ = net(X_var)
                 output = y_.float()
-                #loss = self.__loss_fun(y_.float(), y_var.long())
-                loss = self.exp_loss(y_.float(), y_var.long(), idx)
+                loss = self.__loss_fun(y_.float(), y_var.long())
+                #loss = self.exp_loss(y_.float(), y_var.long(), idx)
                 loss.backward()
                 opt.step()
 
                 self.update_gamma(y_.float(), idx, y_var.long())
-                self.update_cost(y_.float(), idx, y_var.long())
+                weights = self.update_cost(y_.float(), idx, y_var.long())
+
+                self.__weights[idx] = weights.cpu().squeeze_().double()
 
                 _, y_ = torch.max(y_, dim=1)
 
@@ -94,7 +96,7 @@ class BoostRunner:
         target_index = target.data
         cost_weight = torch.index_select(self.__cost_matrix, 0, index)
         cost_weight.scatter_(1, target_index.view(-1, 1), 1)
-        loss = torch.div(cost, cost_weight)
+        loss = torch.div(cost, cost_weight) - 1
         return loss.sum(dim=1).mean()
 
     def update_cost(self, output, index, target):
@@ -108,6 +110,7 @@ class BoostRunner:
         target_index = target.data
         cost_update.data.scatter_(1, target_index.view(-1, 1), eq_update.data)
         self.__cost_matrix[index, :] = cost_update.data
+        return -eq_update.data
 
     def update_gamma(self, output, index, target):
         index = torch.LongTensor(index)
