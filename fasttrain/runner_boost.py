@@ -25,7 +25,7 @@ class BoostRunner:
         self.__num_classes = num_classes
         self.__n_examples = train.train_data.shape[0]
         self.__weights = torch.DoubleTensor(np.ones(self.__n_examples))
-        self.__cost_matrix = torch.ones(self.__n_examples, self.__num_classes)
+        self.__cost_matrix = Variable(torch.ones(self.__n_examples, self.__num_classes))
         self.__state_matrix = torch.ones(self.__n_examples, self.__num_classes)
         self.__alpha = 0
         self.__gamma = 1
@@ -64,8 +64,8 @@ class BoostRunner:
 
                 y_ = net(X_var)
                 output = y_.float()
-                loss = self.__loss_fun(y_.float(), y_var.long())
-                #loss = self.exp_loss(y_.float(), y_var.long())
+                #loss = self.__loss_fun(y_.float(), y_var.long())
+                loss = self.exp_loss(y_.float(), y_var.long(), idx)
                 loss.backward()
                 opt.step()
 
@@ -75,14 +75,27 @@ class BoostRunner:
                 _, y_ = torch.max(y_, dim=1)
 
                 t.update(1)
-                t.set_postfix_str('{:.1f}% loss={:.4f} std={:.2f} min={:.2f} max={:.2f} cost sum={:.4f}'.format(100.0 * self.__accuracy(y_var, y_), loss.data[0], output.std().data[0], torch.min(output.data), torch.max(output.data), self.__cost_matrix.sum()))
+                t.set_postfix_str('{:.1f}% loss={:.4f} std={:.2f} min={:.2f} max={:.2f} cost sum={:.4f}'.format(100.0 * self.__accuracy(y_var, y_), loss.data[0], output.std().data[0], torch.min(output.data), torch.max(output.data), self.__cost_matrix.data.sum(1).mean()))
             t.close()
 
-    def exp_loss(self, output, target):
+    def exp_loss_(self, output, target):
         exp_cost = torch.exp(output)
         exp_target = torch.gather(exp_cost, 1, target.view(-1,1))
         cost = torch.div(torch.sum(exp_cost, 1).view(-1,1), exp_target.view(-1,1)) - 1
         return torch.log(cost.mean())
+
+    def exp_loss(self, output, target, index):
+        exp_cost = torch.exp(output)
+        exp_target = torch.gather(exp_cost, 1, target.view(-1, 1))
+        cost = torch.div(exp_cost, exp_target.view(-1, 1))
+
+        index = torch.LongTensor(index)
+        index = self.__convert(index)
+        target_index = target.data
+        cost_weight = torch.index_select(self.__cost_matrix, 0, index)
+        cost_weight.scatter_(1, target_index.view(-1, 1), 1)
+        loss = torch.div(cost, cost_weight)
+        return loss.sum(dim=1).mean()
 
     def update_cost(self, output, index, target):
         exp_cost = torch.exp(output)
@@ -101,9 +114,9 @@ class BoostRunner:
         index = self.__convert(index)
         target_index = target.data
         cost_matrix = torch.index_select(self.__cost_matrix, 0, index)
-        cost_matrix = self.__convert(cost_matrix)
-        self.__gamma_nominator += -torch.mul(cost_matrix, output.data).sum()
-        self.__gamma_denominator += cost_matrix.scatter_(1, target_index.view(-1, 1), 0).sum()
+
+        self.__gamma_nominator += -torch.mul(cost_matrix.data, output.data).sum()
+        self.__gamma_denominator += cost_matrix.data.scatter_(1, target_index.view(-1, 1), 0).sum()
 
     def update_alpha(self):
         if np.abs(self.__gamma_denominator) > 0:
