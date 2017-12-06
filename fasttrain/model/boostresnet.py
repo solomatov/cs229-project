@@ -4,11 +4,11 @@ from fasttrain.model.resnet import SimpleBlock, DownBlock
 
 
 class BoostResNetCIFAR(nn.Module):
-    def __init__(self, n, pre_activated=False, stochastic_depth=None, retrain=True, affine=False):
+    def __init__(self, n, pre_activated=False, stochastic_depth=None, one_pass_train=True, affine=False):
         super(BoostResNetCIFAR, self).__init__()
 
         self.pre_activated = pre_activated
-        self.retrain = retrain
+        self.one_pass_train = one_pass_train
 
         self.conv1 = nn.Conv2d(3, 8, (3, 3), stride=1, padding=1)
         self.bn1 = nn.BatchNorm2d(8)
@@ -258,5 +258,5 @@ class BoostResNetCIFAR(nn.Module):
 
     def set_layer(self, current_layer):
         self.current_layer = current_layer
-        if not self.retrain:
+        if self.one_pass_train:
             self.define_model()
