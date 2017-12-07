@@ -2,7 +2,7 @@ import argparse
 
 from fasttrain import train_on_cifar
 from fasttrain.model.resnet import ResNetCIFAR
-from fasttrain.schedules import resnet_paper_schedule, yellowfin_schedule
+from fasttrain.schedules import resnet_paper_schedule
 
 parser = argparse.ArgumentParser(description='Train ResNet on CIFAR10')
 parser.add_argument('-n', '--number', type=int, default=20)
@@ -34,10 +34,8 @@ pre_activated = args.pre_activated
 base_lr=args.learn_rate
 show_test = args.show_test
 
-if args.yellowfin:
-    schedule = yellowfin_schedule()
-else:
-    schedule = resnet_paper_schedule(batch_size=batch_size)
+
+schedule = resnet_paper_schedule(batch_size=batch_size, yellow_fin=args.yellowfin)
 
 net = ResNetCIFAR(n, pre_activated=pre_activated, stochastic_depth=stochastic_depth)
 

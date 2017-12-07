@@ -4,14 +4,17 @@ from fasttrain.yellowfin import YFOptimizer
 import torch.optim as optim
 
 
-def resnet_paper_schedule(batch_size=128, base_lr=0.1):
+def resnet_paper_schedule(batch_size=128, base_lr=0.1, yellow_fin=False):
     schedule = TrainSchedule()
 
     wd = 0.0001
     momentum = 0.9
 
     def new_optim(p, lr):
-        return optim.SGD(p, lr=lr, weight_decay=wd, momentum=momentum)
+        if yellow_fin:
+            return YFOptimizer(p, lr=lr, weight_decay=wd)
+        else:
+            return optim.SGD(p, lr=lr, weight_decay=wd, momentum=momentum)
 
     def optim_factory(lr):
         def factory(p):
@@ -31,10 +34,4 @@ def resnet_paper_schedule(batch_size=128, base_lr=0.1):
     schedule.add_step(factory=optim_factory(lr / 10), name='P2', duration=80)
     schedule.add_step(factory=optim_factory(lr / 100), name='P3', duration=40)
 
-    return schedule
-
-
-def yellowfin_schedule():
-    schedule = TrainSchedule()
-    schedule.add_step(factory=lambda p: YFOptimizer(p), name='P1', duration=200)
     return schedule
