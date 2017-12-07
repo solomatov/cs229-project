@@ -2,7 +2,7 @@ import argparse
 
 from fasttrain import train_on_cifar
 from fasttrain.model.resnet import ResNetCIFAR
-from fasttrain.schedules import resnet_paper_schedule
+from fasttrain.schedules import resnet_paper_schedule, yellowfin_schedule
 
 parser = argparse.ArgumentParser(description='Train ResNet on CIFAR10')
 parser.add_argument('-n', '--number', type=int, default=20)
@@ -12,6 +12,7 @@ parser.add_argument('-sd', '--stochastic-depth', type=str, default=None)
 parser.add_argument('-st', '--show-test', type=bool, default=False)
 parser.add_argument('-pa', '--pre-activated', type=bool, default=False)
 parser.add_argument('-hp', '--half-precision', type=bool, default=False)
+parser.add_argument('-yf', '--yellowfin', type=bool, default=False)
 
 args = parser.parse_args()
 
@@ -33,9 +34,13 @@ pre_activated = args.pre_activated
 base_lr=args.learn_rate
 show_test = args.show_test
 
-schedule = resnet_paper_schedule(batch_size=batch_size)
+if args.yellowfin:
+    schedule = yellowfin_schedule()
+else:
+    schedule = resnet_paper_schedule(batch_size=batch_size)
+
 net = ResNetCIFAR(n, pre_activated=pre_activated, stochastic_depth=stochastic_depth)
 
-name=f'ResNet({n}, lr={base_lr}, pa={pre_activated}, sd={args.stochastic_depth}, hp={args.half_precision})'
+name=f'ResNet({n}, lr={base_lr}, pa={pre_activated}, sd={args.stochastic_depth}, hp={args.half_precision}, yf={args.yellowfin})'
 
 train_on_cifar(net, schedule, batch_size=batch_size, name=name, show_test=show_test)
