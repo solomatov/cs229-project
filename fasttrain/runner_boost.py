@@ -64,8 +64,9 @@ class BoostRunner:
 
                 y_ = net(X_var)
                 output = y_.float()
-                loss = self.__loss_fun(y_.float(), y_var.long())
+                #loss = self.__loss_fun(y_.float(), y_var.long())
                 #loss = self.exp_loss(y_.float(), y_var.long(), idx)
+                loss = self.exp_loss(y_.float(), y_var.long())
                 loss.backward()
                 opt.step()
 
@@ -80,13 +81,13 @@ class BoostRunner:
                 t.set_postfix_str('{:.1f}% loss={:.4f} std={:.2f} min={:.2f} max={:.2f} cost sum={:.4f}'.format(100.0 * self.__accuracy(y_var, y_), loss.data[0], output.std().data[0], torch.min(output.data), torch.max(output.data), self.__cost_matrix.data.sum(1).mean()))
             t.close()
 
-    def exp_loss_(self, output, target):
+    def exp_loss(self, output, target):
         exp_cost = torch.exp(output)
         exp_target = torch.gather(exp_cost, 1, target.view(-1,1))
         cost = torch.div(torch.sum(exp_cost, 1).view(-1,1), exp_target.view(-1,1)) - 1
         return torch.log(cost.mean())
 
-    def exp_loss(self, output, target, index):
+    def exp_loss_(self, output, target, index):
         exp_cost = torch.exp(output)
         exp_target = torch.gather(exp_cost, 1, target.view(-1, 1))
         cost = torch.div(exp_cost, exp_target.view(-1, 1))
