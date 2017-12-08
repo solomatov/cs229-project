@@ -4,7 +4,14 @@ from fasttrain.yellowfin import YFOptimizer
 import torch.optim as optim
 
 
-def resnet_paper_schedule(batch_size=128, base_lr=0.1, yellow_fin=False):
+STAGE_1_EPOCHS = 80
+STAGE_2_EPOCHS = 80
+STAGE_3_EPOCHS = 40
+
+TOTAL_EPOCHS=STAGE_1_EPOCHS + STAGE_2_EPOCHS + STAGE_3_EPOCHS
+
+
+def resnet_paper_schedule(batch_size=128, base_lr=0.1, scale=1.0, yellow_fin=False):
     schedule = TrainSchedule()
 
     wd = 0.0001
@@ -30,8 +37,8 @@ def resnet_paper_schedule(batch_size=128, base_lr=0.1, yellow_fin=False):
 
     lr = base_lr * scale_factor
 
-    schedule.add_step(factory=optim_factory(lr), name='P1', duration=80)
-    schedule.add_step(factory=optim_factory(lr / 10), name='P2', duration=80)
-    schedule.add_step(factory=optim_factory(lr / 100), name='P3', duration=40)
+    schedule.add_step(factory=optim_factory(lr), name='P1', duration=int(STAGE_1_EPOCHS * scale))
+    schedule.add_step(factory=optim_factory(lr / 10), name='P2', duration=int(STAGE_2_EPOCHS * scale))
+    schedule.add_step(factory=optim_factory(lr / 100), name='P3', duration=int(STAGE_3_EPOCHS * scale))
 
     return schedule
