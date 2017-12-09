@@ -7,7 +7,7 @@ from fasttrain.schedules import resnet_paper_schedule, TOTAL_EPOCHS
 parser = argparse.ArgumentParser(description='Train ResNet on CIFAR10')
 parser.add_argument('-n', '--number', type=int, default=20)
 parser.add_argument('-b', '--batch-size', type=int, default=128)
-parser.add_argument('-lr', '--learn_rate', type=float, default=None)
+parser.add_argument('-lr', '--learn_rate', type=float, default=0.1)
 parser.add_argument('-sd', '--stochastic-depth', type=str, default=None)
 parser.add_argument('-st', '--show-test', type=bool, default=False)
 parser.add_argument('-pa', '--pre-activated', type=bool, default=False)
