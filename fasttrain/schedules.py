@@ -14,12 +14,18 @@ TOTAL_EPOCHS=STAGE_1_EPOCHS + STAGE_2_EPOCHS + STAGE_3_EPOCHS
 def resnet_paper_schedule(batch_size=128, base_lr=0.1, scale=1.0, yellow_fin=False):
     schedule = TrainSchedule()
 
-    wd = 0.0001
     momentum = 0.9
+    if yellow_fin:
+        wd = 5e-4
+        base_lr = 0.0001
+    else:
+        wd = 0.0001
+        base_lr = 0.1
 
     def new_optim(p, lr):
+        nonlocal wd
         if yellow_fin:
-            return YFOptimizer(p, lr=lr, weight_decay=wd)
+            return YFOptimizer(p, lr=lr, weight_decay=wd, mu=momentum)
         else:
             return optim.SGD(p, lr=lr, weight_decay=wd, momentum=momentum)
 
