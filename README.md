@@ -1,5 +1,6 @@
 # Code for CS229 project 'Speeding Up ResNet'
 Authors: Konstantin Solomatov (06246217) and Denis Stepanov (06246218)
+
 Projet Mentor: Daniel Kang
 
 ## Virtual Environment
