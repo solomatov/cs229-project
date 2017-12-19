@@ -4,3 +4,4 @@ tqdm
 jupyter
 matplotlib
 visdom
+pylint
