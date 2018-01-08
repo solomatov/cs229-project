@@ -16,9 +16,9 @@ echo 'venv activated'
 echo 'installing standalone requirements...'
 echo "$(command -v nvidia-smi)"
 if [ -x "$(command -v nvidia-smi)" ]; then
-    pip3 install http://download.pytorch.org/whl/cu80/torch-0.2.0.post3-cp36-cp36m-manylinux1_x86_64.whl 
+    pip3 install http://download.pytorch.org/whl/cu90/torch-0.3.0.post4-cp36-cp36m-linux_x86_64.whl
 else
-    pip3 install http://download.pytorch.org/whl/torch-0.2.0.post3-cp36-cp36m-macosx_10_7_x86_64.whl
+    pip3 install http://download.pytorch.org/whl/torch-0.3.0.post4-cp36-cp36m-macosx_10_7_x86_64.whl
 fi
 
 echo 'done'
