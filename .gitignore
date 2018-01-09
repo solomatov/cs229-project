@@ -3,3 +3,4 @@ data/*
 .idea/*
 *.pyc
 .vscode/*
+sync.sh

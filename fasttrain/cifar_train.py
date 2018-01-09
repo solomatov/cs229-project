@@ -29,6 +29,8 @@ from fasttrain.framework import accuracy_metric, union_metric, loss_metric
 
 
 def train_on_cifar(model, schedule, batch_size=128, name=None, show_test=False, force_multi_gpu=False, half_precision=False):
+    torch.backends.cudnn.benchmark = True
+
     if name:
         print(f'Training: {name}')
     start_time = datetime.now()
