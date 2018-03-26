@@ -17,6 +17,8 @@
 import torch
 from torch.autograd import Variable
 
+from fasttrain.fp16util import set_grad, copy_in_params
+
 import collections
 
 
@@ -34,9 +36,19 @@ class TrainSchedule:
         return result
 
     def train(self, model, loss, *, train, dev, on_epoch_start=None, on_step=None, half_precision=False):
+
+        if half_precision:
+            param_copy = [param.clone().type(torch.cuda.FloatTensor).detach() for param in model.parameters()]
+            for param in param_copy:
+                param.requires_grad = True
+            loss_scale = 256
+        else:
+            param_copy = list(model.parameters())
+            loss_scale = 1
+
         for i, step in enumerate(self.__steps, 0):
             name, factory, duration = step['name'], step['factory'], step['duration']
-            opt = factory(model.parameters())
+            opt = factory(param_copy)
 
             for e in range(duration):
                 if on_epoch_start:
@@ -49,18 +61,28 @@ class TrainSchedule:
                     if torch.cuda.is_available():
                         X = X.cuda()
                         y = y.cuda()
-                        if half_precision:
-                            X = X.half()
-                            y = y.half()
-
-                    opt.zero_grad()
 
                     y_ = model(X)
 
                     loss_value = loss(y_.float(), y.long())
-                    loss_value.backward()
+                    loss_value = loss_value * loss_scale
 
-                    opt.step()
+                    if half_precision:
+                        model.zero_grad()
+                        loss_value.backward()
+                        set_grad(param_copy, list(model.parameters()))
+
+                        if loss_scale != 1:
+                            for param in param_copy:
+                                param.grad.data = param.grad.data / loss_scale
+
+                        opt.step()
+                        copy_in_params(model, param_copy)
+                        torch.cuda.synchronize()
+                    else:
+                        opt.zero_grad()
+                        loss_value.backward()
+                        opt.step()
 
                     if on_step:
                         on_step()
