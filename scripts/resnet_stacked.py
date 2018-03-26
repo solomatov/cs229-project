@@ -30,7 +30,7 @@ parser.add_argument('-pa', '--pre-activated', type=bool, default=False)
 parser.add_argument('-hp', '--half-precision', type=bool, default=False)
 parser.add_argument('-yf', '--yellowfin', type=bool, default=False)
 parser.add_argument('-e', '--epochs', type=int, default=TOTAL_EPOCHS)
-parser.add_argument('-ls', '--loss-scale', type=float, default=1024) # 1024 for half-precision
+parser.add_argument('-ls', '--loss-scale', type=float, default=1) # 1024 for half-precision
 
 args = parser.parse_args()
 
