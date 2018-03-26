@@ -35,16 +35,14 @@ class TrainSchedule:
             result += step['duration']
         return result
 
-    def train(self, model, loss, *, train, dev, on_epoch_start=None, on_step=None, half_precision=False):
+    def train(self, model, loss, *, train, dev, on_epoch_start=None, on_step=None, half_precision=False, loss_scale=1):
 
         if half_precision:
             param_copy = [param.clone().type(torch.cuda.FloatTensor).detach() for param in model.parameters()]
             for param in param_copy:
                 param.requires_grad = True
-            loss_scale = 256
         else:
             param_copy = list(model.parameters())
-            loss_scale = 1
 
         for i, step in enumerate(self.__steps, 0):
             name, factory, duration = step['name'], step['factory'], step['duration']
