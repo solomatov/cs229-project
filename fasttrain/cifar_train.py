@@ -27,8 +27,10 @@ import visdom
 from fasttrain.data import load_cifar10, SublistDataset
 from fasttrain.framework import accuracy_metric, union_metric, loss_metric
 
+from fasttrain.fp16util import network_to_half
 
-def train_on_cifar(model, schedule, batch_size=128, name=None, show_test=False, force_multi_gpu=False, half_precision=False):
+
+def train_on_cifar(model, schedule, batch_size=128, name=None, show_test=False, force_multi_gpu=False, half_precision=False, loss_scale=1):
     torch.backends.cudnn.benchmark = True
 
     if name:
@@ -47,7 +49,8 @@ def train_on_cifar(model, schedule, batch_size=128, name=None, show_test=False, 
     if torch.cuda.is_available():
         model = model.cuda()
         if half_precision:
-            model = model.half()
+            model = network_to_half(model)
+
         if batch_size >= 1024 or force_multi_gpu:
             model = parallel.DataParallel(model)
 
@@ -89,7 +92,7 @@ def train_on_cifar(model, schedule, batch_size=128, name=None, show_test=False, 
     def on_step():
         progress.update(1)
 
-    schedule.train(model, loss, train=train_loader, dev=dev, on_step=on_step, on_epoch_start=on_epoch_start, half_precision=half_precision)
+    schedule.train(model, loss, train=train_loader, dev=dev, on_step=on_step, on_epoch_start=on_epoch_start, half_precision=half_precision, loss_scale=loss_scale)
     progress.close()
     total_time = datetime.now() - start_time
 
