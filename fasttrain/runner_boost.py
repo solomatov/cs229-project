@@ -54,47 +54,103 @@ class BoostRunner:
         parameters = filter(lambda p: p.requires_grad, self.__net.parameters())
         opt = opt_factory(parameters)
 
-        sampler = WeightedRandomSampler(self.__weights, len(self.__weights))
-        loader = DataLoader(self.__train, batch_size=self.__batch_size, num_workers=2, sampler=sampler, shuffle=False)
-        #loader = DataLoader(self.__train, batch_size=self.__batch_size, num_workers=2)
+        #sampler = WeightedRandomSampler(self.__weights, len(self.__weights))
+        #loader = DataLoader(self.__train, batch_size=self.__batch_size, num_workers=2, sampler=sampler, shuffle=False)
+        loader = DataLoader(self.__train, batch_size=self.__batch_size, num_workers=2)
         net = self.__get_train_net()
 
-        for e in range(epochs):
-            print('Epoch = {}'.format(e))
-            dev_acc = self.evaluate(self.__dev)
-            print('Dev Accuracy = {}'.format(dev_acc))
-            if self.__on_epoch:
-                self.__on_epoch(dev_acc)
+        a_previous = 0.0
+        a_current = -1.0
+        s = np.zeros((self.__n_examples, self.__num_classes))
+        cost = np.zeros((self.__n_examples, self.__num_classes))
+        Ytrain = self.__train.train_labels
+        Xoutput_previous = np.zeros((self.__n_examples, self.__num_classes))
+        gamma_previous = 0.5
+        gamma_current = gamma_previous
+        totalIterations = 0
+        check_every = 10000
+        max_iters = 10000
+        gamma_thresh = -0.0001
+        for layer in range(self.__net.layers):
+            print(f'Layer: {layer}')
+            self.__net.set_layer(layer)
+            gamma = -1
+            Z = 0
+            for i in range(self.__n_examples):
+                localSum = 0
+                for j in range(self.__num_classes):
+                    if j != Ytrain[i]:
+                        cost[i][j] = np.exp(s[i][j] - s[i][int(Ytrain[i])])
+                        localSum += cost[i][j]
+                cost[i][int(Ytrain[i])] = -1 * localSum
+                Z += localSum
 
-            self.__net.train()
-            t = tqdm(total=len(loader))
+            tries = 0
+            iteration = 0
+            while (gamma < gamma_thresh) and (check_every * tries) < max_iters:
+                accTrain = 0
+                err = 0
 
-            for i, data in enumerate(loader, 0):
+                for e in range(epochs):
+                    print('Epoch = {}'.format(e))
+                    dev_acc, _ = self.evaluate(self.__dev)
+                    print('Dev Accuracy = {}'.format(dev_acc))
+                    if self.__on_epoch:
+                        self.__on_epoch(dev_acc)
 
-                X_batch, y_batch, idx = self.__convert(data[0]), self.__convert(data[1]), data[2]
+                    net.train()
+                    t = tqdm(total=len(loader))
 
-                X_var, y_var = Variable(X_batch), Variable(y_batch)
+                    for i, data in enumerate(loader, 0):
+                        iteration += 1
+                        X_batch, y_batch, idx = self.__convert(data[0]), self.__convert(data[1]), data[2]
+                        X_var, y_var = Variable(X_batch), Variable(y_batch)
 
-                opt.zero_grad()
+                        opt.zero_grad()
+                        y_ = net(X_var)
+                        output = y_.float()
+                        loss = torch.exp(self.__loss_fun(y_.float(), y_var.long()))
+                        loss.backward()
 
-                y_ = net(X_var)
-                output = y_.float()
-                #loss = self.__loss_fun(y_.float(), y_var.long())
-                #loss = self.exp_loss(y_.float(), y_var.long(), idx)
-                loss = self.exp_loss(y_.float(), y_var.long())
-                loss.backward()
-                opt.step()
+                        err += loss.data[0]
+                        accTrain += np.mean(torch.max(output, 1)[1].cpu().data.numpy() == y_batch)
 
-                self.update_gamma(y_.float(), idx, y_var.long())
-                weights = self.update_cost(y_.float(), idx, y_var.long())
+                        for p in net.parameters():
+                            try:
+                                p.grad.data.clamp_(-.1, .1)
+                            except AttributeError:
+                                pass
 
-                self.__weights[idx] = weights.cpu().squeeze_().double()
+                        opt.step()
 
-                _, y_ = torch.max(y_, dim=1)
+                        _, y_ = torch.max(y_, dim=1)
 
-                t.update(1)
-                t.set_postfix_str('{:.1f}% loss={:.4f} std={:.2f} min={:.2f} max={:.2f} cost sum={:.4f}'.format(100.0 * self.__accuracy(y_var, y_), loss.data[0], output.std().data[0], torch.min(output.data), torch.max(output.data), self.__cost_matrix.data.sum(1).mean()))
-            t.close()
+                        t.update(1)
+                        t.set_postfix_str('{:.1f}% loss={:.4f} gamma={:.4f} gamma_current={:.4f} iter_tot={} iter={}'.format(
+                            100.0 * self.__accuracy(y_var, y_), loss.data[0], gamma, gamma_current, check_every * tries, iteration))
+
+                        if iteration > check_every:
+                            iteration = 0
+                            # compute gamma
+                            accTrain, Xoutput = self.evaluate(self.__train)
+                            net.train()
+                            gamma_current = -1 * np.sum(Xoutput * cost) / Z
+                            gamma = (gamma_current ** 2 - gamma_previous ** 2) / (1 - gamma_previous ** 2)
+                            if gamma > 0:
+                                gamma = np.sqrt(gamma)
+                            else:
+                                gamma = -1 * np.sqrt(-1 * gamma)
+                            a_current = 0.5 * np.log((1 + gamma_current) / (1 - gamma_current))
+
+                            tries += 1
+                            if (gamma > gamma_thresh or ((check_every * tries) >= max_iters)):
+                                totalIterations = totalIterations + (tries * check_every)
+
+                    t.close()
+
+            s += Xoutput * a_current - Xoutput_previous * a_previous
+            gamma_previous = gamma_current
+
 
     def exp_loss(self, output, target):
         exp_cost = torch.exp(output)
@@ -107,9 +163,9 @@ class BoostRunner:
         exp_target = torch.gather(exp_cost, 1, target.view(-1, 1))
         cost = torch.div(exp_cost, exp_target.view(-1, 1))
 
-        index = torch.LongTensor(index)
+        index = Variable(torch.LongTensor(index))
         index = self.__convert(index)
-        target_index = target.data
+        target_index = Variable(target.data)
         cost_weight = torch.index_select(self.__cost_matrix, 0, index)
         cost_weight.scatter_(1, target_index.view(-1, 1), 1)
         loss = torch.div(cost, cost_weight) - 1
@@ -129,7 +185,7 @@ class BoostRunner:
         return -eq_update.data
 
     def update_gamma(self, output, index, target):
-        index = torch.LongTensor(index)
+        index = Variable(torch.LongTensor(index))
         index = self.__convert(index)
         target_index = target.data
         cost_matrix = torch.index_select(self.__cost_matrix, 0, index)
@@ -146,6 +202,7 @@ class BoostRunner:
 
     def evaluate(self, data):
         loader = DataLoader(data, batch_size=128, num_workers=2)
+        Xoutput = np.zeros((len(data), 10))
 
         samples = 0
         total_correct = 0
@@ -158,18 +215,20 @@ class BoostRunner:
             X_batch, y_batch, idx = self.__convert(data[0]), self.__convert(data[1]), data[2]
 
             X_var, y_var = Variable(X_batch), Variable(y_batch)
-            y_ = torch.max(net(X_var), dim=1)[1]
+            output = net(X_var)
+            y_ = torch.max(output, dim=1)[1]
             samples += y_batch.size()[0]
 
             total_correct += torch.sum(self.__eq(y_var, y_)).data[0]
+            Xoutput[idx] = output.cpu().data.numpy()
 
-        return total_correct / samples
+        return total_correct / samples, Xoutput
 
     def on_epoch(self, handler):
         self.__on_epoch = handler
 
     def __init_cost(self, target):
-        index = torch.LongTensor(target)
+        index = Variable(torch.LongTensor(target))
         self.__cost_matrix.scatter_(1, index.view(-1, 1), 1 - self.__num_classes)
 
     def __convert(self, t):
