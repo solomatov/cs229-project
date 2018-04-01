@@ -13,7 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 """
-
 import torch.nn as nn
 import torch.nn.functional as F
 from fasttrain.model.resnet import SimpleBlock, DownBlock
@@ -27,11 +26,12 @@ class BoostResNetCIFAR(nn.Module):
         self.one_pass_train = one_pass_train
         self.__verbatim = verbatim
 
-        self.conv1 = nn.Conv2d(3, 8, (3, 3), stride=1, padding=1)
-        self.bn1 = nn.BatchNorm2d(8)
+        self.conv1 = nn.Conv2d(3, 16, (3, 3), stride=1, padding=1)
+        self.bn1 = nn.BatchNorm2d(16)
 
         if self.pre_activated:
-            self.bn_first = nn.BatchNorm2d(8)
+            self.bn_first = nn.BatchNorm2d(16)
+            self.bn_last = nn.BatchNorm2d(64)
 
         if stochastic_depth:
             from_prob = stochastic_depth['from'] or 1.0
@@ -47,34 +47,14 @@ class BoostResNetCIFAR(nn.Module):
             return to_prob + (from_prob - to_prob) * (total_layers - layers) / total_layers
 
         self.resnet_modules = nn.ModuleList()
-        self.bn_modules = nn.ModuleList()
-        self.hypothesis_modules = nn.ModuleList()
-        self.bn_modules_after = nn.ModuleList()
-        # 64-64 blocks
-        for i in range(n):
-            self.resnet_modules.add_module(str(layers), SimpleBlock(8,
-                                                                    pre_activated=self.pre_activated,
-                                                                    prob=layer_prob()))
-            self.bn_modules.add_module(str(layers), nn.BatchNorm2d(8))
-            self.hypothesis_modules.add_module(str(layers), nn.Linear(8192, 10))
-            self.bn_modules_after.add_module(str(layers), nn.BatchNorm1d(10, affine=affine))
-            layers += 1
+        self.needs_fitting = []
+
         # 32-32 blocks
         for i in range(n):
-            if i == 0:
-                self.resnet_modules.add_module(str(layers), DownBlock(8,
-                                                                    pre_activated=self.pre_activated,
-                                                                    prob=layer_prob()))
-                self.bn_modules.add_module(str(layers), nn.BatchNorm2d(16))
-                self.hypothesis_modules.add_module(str(layers), nn.Linear(4096, 10))
-                self.bn_modules_after.add_module(str(layers), nn.BatchNorm1d(10, affine=affine))
-            else:
-                self.resnet_modules.add_module(str(layers), SimpleBlock(16,
-                                                                    pre_activated=self.pre_activated,
-                                                                    prob=layer_prob()))
-                self.bn_modules.add_module(str(layers), nn.BatchNorm2d(16))
-                self.hypothesis_modules.add_module(str(layers), nn.Linear(4096, 10))
-                self.bn_modules_after.add_module(str(layers), nn.BatchNorm1d(10, affine=affine))
+            self.resnet_modules.add_module(str(layers), SimpleBlock(16,
+                                                                pre_activated=self.pre_activated,
+                                                                prob=layer_prob()))
+            self.needs_fitting.append(False)
             layers += 1
         # 16-16 blocks
         for i in range(n):
@@ -82,16 +62,12 @@ class BoostResNetCIFAR(nn.Module):
                 self.resnet_modules.add_module(str(layers), DownBlock(16,
                                                                       pre_activated=self.pre_activated,
                                                                       prob=layer_prob()))
-                self.bn_modules.add_module(str(layers), nn.BatchNorm2d(32))
-                self.hypothesis_modules.add_module(str(layers), nn.Linear(2048, 10))
-                self.bn_modules_after.add_module(str(layers), nn.BatchNorm1d(10, affine=affine))
+                self.needs_fitting.append(True)
             else:
                 self.resnet_modules.add_module(str(layers), SimpleBlock(32,
                                                                         pre_activated=self.pre_activated,
                                                                         prob=layer_prob()))
-                self.bn_modules.add_module(str(layers), nn.BatchNorm2d(32))
-                self.hypothesis_modules.add_module(str(layers), nn.Linear(2048, 10))
-                self.bn_modules_after.add_module(str(layers), nn.BatchNorm1d(10, affine=affine))
+                self.needs_fitting.append(False)
             layers += 1
         # 8-8 blocks
         for i in range(n):
@@ -99,36 +75,15 @@ class BoostResNetCIFAR(nn.Module):
                  self.resnet_modules.add_module(str(layers), DownBlock(32,
                                                                        pre_activated=self.pre_activated,
                                                                        prob=layer_prob()))
-                 self.bn_modules.add_module(str(layers), nn.BatchNorm2d(64))
-                 self.hypothesis_modules.add_module(str(layers), nn.Linear(1024, 10))
-                 self.bn_modules_after.add_module(str(layers), nn.BatchNorm1d(10, affine=affine))
+                 self.needs_fitting.append(True)
              else:
                  self.resnet_modules.add_module(str(layers), SimpleBlock(64,
                                                                          pre_activated=self.pre_activated,
                                                                          prob=layer_prob()))
-                 self.bn_modules.add_module(str(layers), nn.BatchNorm2d(64))
-                 self.hypothesis_modules.add_module(str(layers), nn.Linear(1024, 10))
-                 self.bn_modules_after.add_module(str(layers), nn.BatchNorm1d(10, affine=affine))
+                 self.needs_fitting.append(False)
              layers += 1
 
-         # 4-4 blocks
-        for i in range(n):
-             if i == 0:
-                 self.resnet_modules.add_module(str(layers), DownBlock(64,
-                                                                           pre_activated=self.pre_activated,
-                                                                           prob=layer_prob()))
-                 self.bn_modules.add_module(str(layers), nn.BatchNorm2d(128))
-                 self.hypothesis_modules.add_module(str(layers), nn.Linear(512, 10))
-                 self.bn_modules_after.add_module(str(layers), nn.BatchNorm1d(10, affine=affine))
-             else:
-                 self.resnet_modules.add_module(str(layers), SimpleBlock(128,
-                                                                             pre_activated=self.pre_activated,
-                                                                             prob=layer_prob()))
-                 self.bn_modules.add_module(str(layers), nn.BatchNorm2d(128))
-                 self.hypothesis_modules.add_module(str(layers), nn.Linear(512, 10))
-                 self.bn_modules_after.add_module(str(layers), nn.BatchNorm1d(10, affine=affine))
-             layers += 1
-
+        self.fc = nn.Linear(64, 10)
         self.layers = layers
         self.current_layer = 0
 
@@ -158,63 +113,36 @@ class BoostResNetCIFAR(nn.Module):
                 self.bn_first.eval()
 
         for layer in range(self.layers):
-            bn_module = self.bn_modules[layer]
-            resnet_module = self.resnet_modules[layer]
-            hypothesis_module = self.hypothesis_modules[layer]
-            bn_module_after = self.bn_modules_after[layer]
-            if layer == self.current_layer:
-                self.set_require_grad(bn_module, True)
-                self.set_require_grad(resnet_module, True)
-                self.set_require_grad(hypothesis_module, True)
-                self.set_require_grad(bn_module_after, True)
-                bn_module.train(True)
-                bn_module_after.train(True)
-            else:
-                self.set_require_grad(bn_module, False)
-                self.set_require_grad(resnet_module, False)
-                self.set_require_grad(hypothesis_module, False)
-                self.set_require_grad(bn_module_after, False)
-                bn_module.train(False)
-                bn_module_after.train(False)
-                bn_module.eval()
-                bn_module_after.eval()
+            self.set_require_grad(self.resnet_modules[layer], False)
+
+        self.set_require_grad(self.resnet_modules[self.current_layer], True)
+        for layer in range(self.current_layer, self.layers):
+            if self.needs_fitting[layer]:
+                self.set_require_grad(self.resnet_modules[layer], True)
 
     def forward(self, x):
-        hypothesis_module = self.hypothesis_modules[self.current_layer]
-        bn_module = self.bn_modules[self.current_layer]
-        bn_stabilizer = self.bn_modules_after[self.current_layer]
-
         output = self.net_forward(x)
-        if self.current_layer == self.layers - 1:
-            if self.pre_activated:
-                output = F.relu(output)
-            features = output
-            flat = features.view(features.size()[0], -1)
-            return bn_stabilizer(hypothesis_module(flat))
-        else:
-            if self.pre_activated:
-                #output = F.relu(bn_module(output))
-                output = bn_module(F.relu(output))
-                #output = F.relu(output)
-
-        flat = output.view(output.size()[0], -1)
-        return bn_stabilizer(hypothesis_module(flat))
+        features = F.avg_pool2d(output, (8, 8))
+        flat = features.view(features.size()[0], -1)
+        return self.fc(flat)
 
     def net_forward(self, x):
         x = F.relu(self.bn1(self.conv1(x)))
+        if self.pre_activated:
+            x = F.relu(self.bn_first(x))
+
+        for layer in range(self.current_layer):
+            resnet_module = self.resnet_modules[layer]
+            x = resnet_module(x)
+
+        for layer in range(self.current_layer, self.layers):
+            if self.needs_fitting[layer]:
+                fitting_module = self.resnet_modules[layer]
+                x = fitting_module(x)
 
         if self.pre_activated:
-            #x = F.relu(self.bn_first(x))
-            x = self.bn_first(F.relu(x))
-            #x = F.relu(x)
-
-        if self.current_layer > 0:
-            for layer in range(self.current_layer):
-                resnet_module = self.resnet_modules[layer]
-                x = resnet_module(x)
-
-        resnet_module = self.resnet_modules[self.current_layer]
-        return resnet_module(x)
+            x = F.relu(self.bn_last(x))
+        return x
 
     def set_layer(self, current_layer):
         self.current_layer = current_layer
